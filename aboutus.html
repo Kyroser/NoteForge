@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>نوت‌فورج — درباره ما</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              parchment: "#F5F1E9",
+              slate: "#6B7A8F",
+              clay: "#DCC7BE",
+              sage: "#86B3A2",
+              midnight: "#1A2930",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      :root {
+        --left-y: -36px;
+        --right-y: 36px;
+        --left-rot: -1.5deg;
+        --right-rot: 1.8deg;
+        --left-h: 420px;
+        --right-h: 360px;
+      }
+
+      body {
+        font-family: "Vazirmatn", sans-serif;
+      }
+
+      .diagonal-bottom {
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+      }
+      .diagonal-top {
+        clip-path: polygon(0 15%, 50% 0, 100% 15%, 100% 100%, 0 100%);
+      }
+
+      .section-rule {
+        height: 4px;
+        width: 64px;
+        background: linear-gradient(90deg, #86B3A2, #DCC7BE);
+        border-radius: 999px;
+        margin: 8px auto 0;
+      }
+
+      .story-grid {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+        align-items: start;
+      }
+
+      .story-el {
+        position: relative;
+        overflow: visible;
+      }
+
+      .story-img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 6px solid rgba(245, 241, 233, 0.95);
+        box-shadow: 0 20px 50px rgba(10, 20, 25, 0.12);
+        transition: transform 0.45s cubic-bezier(.2,.8,.2,1), box-shadow 0.45s;
+        background: #fff;
+      }
+
+      .story-left { height: var(--left-h); }
+      .story-left .story-img { transform: translateY(var(--left-y)) rotate(var(--left-rot)); }
+      .story-text { z-index: 30; position: relative; padding-top: 0.6rem; }
+      .story-right { height: var(--right-h); display: flex; justify-content: flex-end; }
+      .story-right .story-img { transform: translateY(var(--right-y)) rotate(var(--right-rot)); width: calc(100% - 0.5rem); }
+
+      @media (max-width: 767px) {
+        .story-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+        .story-left, .story-right { height: 260px; }
+        .story-left .story-img, .story-right .story-img { transform: none !important; width: 100% !important; border-width: 4px; }
+        .story-text { padding-top: 0; }
+      }
+
+      .hiw-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,241,233,0.98));
+        border-radius: 14px;
+        padding: 1.15rem;
+        box-shadow: 0 18px 40px rgba(26,41,48,0.07);
+        border: 1px solid rgba(26,41,48,0.04);
+        transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s;
+      }
+      .hiw-card:hover { transform: translateY(-6px); box-shadow: 0 28px 60px rgba(26,41,48,0.10); }
+
+      .hiw-badge {
+        width: 56px;
+        height: 56px;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(134,179,162,0.18), rgba(220,199,190,0.18));
+        border: 1px solid rgba(134,179,162,0.12);
+      }
+
+      .hiw-illustration {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(26,41,48,0.09);
+        border: 6px solid rgba(245,241,233,0.95);
+        background: linear-gradient(180deg,#fff,#f8f6f3);
+      }
+
+      .dots {
+        background-image: radial-gradient(rgba(26,41,48,0.06) 1px, transparent 1px);
+        background-size: 10px 10px;
+        opacity: 0.55;
+      }
+    </style>
+  </head>
+
+  <body class="bg-parchment text-midnight overflow-x-hidden">
+    <!-- header: logo moved to left, nav on right; nav order reversed with flex-row-reverse -->
+    <header class="bg-white shadow-sm py-4 fixed top-0 right-0 w-full z-50">
+      <div class="container mx-auto px-6 flex justify-between items-center">
+        <!-- لوگو (حالا در DOM اول برای قرارگیری در سمت چپ) -->
+        <a href="./index.html" class="text-2xl font-bold text-midnight">نوت‌فورج</a>
+
+        <!-- ناوبری؛ flex-row-reverse برای معکوس کردن ترتیب آیتم‌ها در RTL -->
+        <nav class="flex items-center gap-6 flex-row-reverse">
+          <a
+            href="./auth.html#signin"
+            class="bg-sage text-white px-4 py-2 rounded-lg hover:bg-sage/90 transition"
+            >ثبت‌نام</a
+          >
+          <a
+            href="./auth.html#login"
+            class="text-slate hover:text-sage transition"
+            >ورود</a
+          >
+          <a href="./explore.html" class="text-slate hover:text-sage transition"
+            >درباره ما</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main class="pt-20">
+      <!-- HERO -->
+      <section
+        class="relative hero-h h-[90vh] diagonal-bottom bg-cover bg-center flex items-center justify-center"
+        style="background-image: url('https://plus.unsplash.com/premium_photo-1677567996070-68fa4181775a?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=1400&q=80');"
+      >
+        <div class="absolute inset-0 bg-black/55"></div>
+        <div class="text-center text-white relative z-10 px-6 max-w-3xl">
+          <h1 class="text-5xl md:text-6xl font-extrabold tracking-wide mb-6 drop-shadow-lg">
+            درباره ما
+          </h1>
+
+          <p class="text-lg md:text-xl text-white/90 leading-relaxed mb-2" data-aos="fade-up" data-aos-delay="100">
+            ما اینجا هستیم تا نوشتن را جمعّی‌تر کنیم
+          </p>
+          <p class="text-base md:text-lg text-white/80 leading-relaxed" data-aos="fade-up" data-aos-delay="150">
+            بستری برای خلق، ویرایش و رشد ایده‌ها — جایی NoteForge که نوشته‌ها با همکاری جامعه کامل‌تر می‌شوند.
+          </p>
+        </div>
+      </section>
+
+      <!-- STORY -->
+      <section class="diagonal-top pt-32 pb-40 bg-parchment relative">
+        <h2 class="text-center text-3xl font-bold text-midnight tracking-widest mb-4">
+          داستان ما
+        </h2>
+        <div class="section-rule"></div>
+
+        <div class="max-w-6xl mx-auto px-6 mt-10 story-grid" aria-labelledby="story-heading">
+          <div class="story-el story-left" data-aos="fade-right" data-aos-delay="80" aria-hidden="true">
+            <img
+              src="https://images.unsplash.com/photo-1505682499293-233fb141754c?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0"
+              alt="تصویر داستان ۱"
+              class="story-img"
+            />
+          </div>
+
+          <div class="story-el story-text" data-aos="fade-up" data-aos-delay="160" id="story-heading">
+            <p class="text-lg mb-4">
+              نوت‌فورج پلتفرمی است ساخته‌شده برای خلاقیتِ دسته‌جمعی. نویسندگان، اندیشمندان و خالقان می‌توانند با هم ایده‌ها را شکل دهند و نوشته‌ها را رشد دهند.
+            </p>
+
+            <p class="text-lg">
+              سیستم ما ترکیبی از روایت بلند و ویرایشِ جامعه‌محور است تا نوشته‌ها به صورت ارگانیک پیشرفت کنند. هدف ما این است که خلق محتوا جمعی و دلنشین باشد.
+            </p>
+          </div>
+
+          <div class="story-el story-right" data-aos="fade-left" data-aos-delay="120" aria-hidden="true">
+            <img
+              src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0"
+              alt="تصویر داستان ۲"
+              class="story-img"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- TEAM -->
+      <section class="relative diagonal-bottom bg-midnight text-white py-24">
+        <h2 class="text-center text-3xl font-bold tracking-widest mb-4">
+          تیم
+        </h2>
+        <div class="section-rule"></div>
+
+        <div class="max-w-3xl mx-auto text-center mt-6 px-6" data-aos="fade-up">
+          <p class="text-white/80 leading-relaxed">
+            هر خط از NoteForge نتیجه همکاری آدم‌هایی است که به اشتراک دانش و خلاقیت باور دارند.
+            ما با ترکیب طراحی، کدنویسی و ایده‌پردازی، پلتفرمی می‌سازیم که نوشتن را ساده‌تر و جمعی‌تر کند.
+          </p>
+        </div>
+
+        <div class="container mx-auto px-6 mt-10">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            <!-- Member 1 -->
+            <div
+              class="team-card bg-parchment/5 rounded-2xl p-6 text-center"
+              data-aos="zoom-in"
+              data-aos-delay="0"
+            >
+              <div class="w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-parchment shadow-lg">
+                <img
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=60"
+                  alt="سارا حسینی"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+
+              <h3 class="mt-6 text-lg font-semibold text-white">سارا حسینی</h3>
+              <p class="mt-2 text-clay font-medium">طراح رابط و تجربه کاربری</p>
+
+              <p class="text-white/70 mt-4 text-sm leading-relaxed">
+                مسئول طراحی ظاهر و روان‌سازی مسیر کاربر در محصول.
+              </p>
+            </div>
+
+            <!-- Member 2 -->
+            <div
+              class="team-card bg-parchment/5 rounded-2xl p-6 text-center"
+              data-aos="zoom-in"
+              data-aos-delay="100"
+            >
+              <div class="w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-parchment shadow-lg">
+                <img
+                  src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=400&q=60"
+                  alt="مهدی رضایی"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+
+              <h3 class="mt-6 text-lg font-semibold text-white">مهدی رضایی</h3>
+              <p class="mt-2 text-clay font-medium">مدیر محصول</p>
+
+              <p class="text-white/70 mt-4 text-sm leading-relaxed">
+                هماهنگ‌کننده تیم‌ها و مسئول جهت‌دهی محصول بر اساس نیاز کاربران.
+              </p>
+            </div>
+
+            <!-- Member 3 -->
+            <div
+              class="team-card bg-parchment/5 rounded-2xl p-6 text-center"
+              data-aos="zoom-in"
+              data-aos-delay="200"
+            >
+              <div class="w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-parchment shadow-lg">
+                <img
+                  src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=60"
+                  alt="آرمان کاظمی"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+
+              <h3 class="mt-6 text-lg font-semibold text-white">آرمان کاظمی</h3>
+              <p class="mt-2 text-clay font-medium">مهندس نرم‌افزار</p>
+
+              <p class="text-white/70 mt-4 text-sm leading-relaxed">
+                توسعه‌دهنده اصلی بک‌اند و زیرساخت‌های پلتفرم.
+              </p>
+            </div>
+
+            <!-- Member 4 -->
+            <div
+              class="team-card bg-parchment/5 rounded-2xl p-6 text-center"
+              data-aos="zoom-in"
+              data-aos-delay="300"
+            >
+              <div class="w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-parchment shadow-lg">
+                <img
+                  src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=400&q=60"
+                  alt="لیلا مرادی"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+
+              <h3 class="mt-6 text-lg font-semibold text-white">لیلا مرادی</h3>
+              <p class="mt-2 text-clay font-medium">مدیر محتوا</p>
+
+              <p class="text-white/70 mt-4 text-sm leading-relaxed">
+                مسئول بازبینی محتوایی، هماهنگی نشر و راهنمای نویسندگان.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- HOW IT WORKS -->
+      <section id="how-it-works" class="diagonal-top bg-white pt-20 pb-24">
+        <h2 class="text-center text-3xl font-bold text-midnight tracking-widest mb-3">چگونه کار می‌کنیم</h2>
+        <div class="section-rule"></div>
+
+        <div class="max-w-7xl mx-auto px-6 mt-10">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+            <!-- Illustration / photo -->
+            <div class="order-2 lg:order-1" data-aos="fade-right" data-aos-delay="80">
+              <div class="hiw-illustration">
+                <img
+                  src="https://images.unsplash.com/photo-1585829365343-ea8ed0b1cb5b?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3"
+                  alt="تصویر همکاری"
+                  class="w-full h-[420px] object-cover"
+                />
+              </div>
+
+              <div class="relative -mt-16 lg:-mt-20 flex justify-between items-end">
+                <div class="bg-white/95 rounded-lg p-4 shadow-lg w-full lg:w-3/4 -mr-4" data-aos="fade-up" data-aos-delay="160">
+                  <div class="flex items-center gap-3">
+                    <div class="hiw-badge">
+                      <i data-feather="zap" class="w-5 h-5 text-sage"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm text-slate font-semibold">ابزارهای سریع برای شروع</div>
+                      <div class="text-xs text-slate/70">ویرایش زنده، نسخه‌بندی و قالب‌های آماده</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Steps -->
+            <div class="order-1 lg:order-2" data-aos="fade-left" data-aos-delay="100">
+              <div class="grid gap-6">
+                <!-- Step 1 -->
+                <div class="hiw-card flex items-start gap-4" data-aos="fade-up" data-aos-delay="120">
+                  <div class="hiw-badge flex-shrink-0">
+                    <i data-feather="edit" class="w-5 h-5 text-midnight"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-midnight font-semibold">۱ — آغاز کنید</h4>
+                    <p class="text-slate text-sm mt-1">
+                      یک نوشتهٔ جدید بسازید یا متن‌تان را وارد کنید، قالب مناسب را انتخاب کنید و کار را شروع کنید.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="hiw-card flex items-start gap-4" data-aos="fade-up" data-aos-delay="140">
+                  <div class="hiw-badge flex-shrink-0">
+                    <i data-feather="users" class="w-5 h-5 text-midnight"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-midnight font-semibold">۲ — همکاری کنید</h4>
+                    <p class="text-slate text-sm mt-1">
+                      اعضا را دعوت کنید، تغییرات را با هم بررسی کنید و از ابزارهای بازخورد استفاده کنید.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="hiw-card flex items-start gap-4" data-aos="fade-up" data-aos-delay="160">
+                  <div class="hiw-badge flex-shrink-0">
+                    <i data-feather="share" class="w-5 h-5 text-midnight"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-midnight font-semibold">۳ — منتشر و رشد دهید</h4>
+                    <p class="text-slate text-sm mt-1">
+                      منتشر کنید، بازخورد بگیرید و اجازه دهید نوشته‌ها با مشارکت جامعه بهتر شوند.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                  <div class="sm:col-span-2">
+                    <a href="./auth.html#signin" class="inline-block bg-sage text-white px-6 py-3 rounded-full hover:bg-sage/90 transition shadow">
+                      شروع کنید — رایگان
+                    </a>
+                    <p class="text-slate text-sm mt-3">
+                      به جمع نویسندگان بپیوندید؛ هر ایده‌ای شایسته رشد است.
+                    </p>
+                  </div>
+
+                  <div class="dots p-4 rounded-lg text-sm text-slate/80 bg-white/95 shadow-sm" data-aos="fade-up" data-aos-delay="200">
+                    «نوت‌فورج روند نوشتن مشترک را برای تیم ما ساده کرد.»
+                    <div class="mt-2 text-clay text-xs">— سارا، نویسنده</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- optional small features row -->
+          <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="text-center p-4 rounded-lg bg-parchment/60" data-aos="fade-up" data-aos-delay="220">
+              <div class="mx-auto w-12 h-12 rounded-lg bg-white grid place-items-center mb-3">
+                <i data-feather="clock" class="w-5 h-5 text-midnight"></i>
+              </div>
+              <div class="font-semibold text-midnight">ویرایش بلادرنگ</div>
+              <div class="text-slate text-xs mt-2">هم‌زمان با دیگران بنویسید و تغییرات را ببینید.</div>
+            </div>
+
+            <div class="text-center p-4 rounded-lg bg-parchment/60" data-aos="fade-up" data-aos-delay="240">
+              <div class="mx-auto w-12 h-12 rounded-lg bg-white grid place-items-center mb-3">
+                <i data-feather="lock" class="w-5 h-5 text-midnight"></i>
+              </div>
+              <div class="font-semibold text-midnight">کنترل دسترسی</div>
+              <div class="text-slate text-xs mt-2">کنترل کنید چه کسی می‌تواند ببیند یا ویرایش کند.</div>
+            </div>
+
+            <div class="text-center p-4 rounded-lg bg-parchment/60" data-aos="fade-up" data-aos-delay="260">
+              <div class="mx-auto w-12 h-12 rounded-lg bg-white grid place-items-center mb-3">
+                <i data-feather="bar-chart-2" class="w-5 h-5 text-midnight"></i>
+              </div>
+              <div class="font-semibold text-midnight">تحلیل‌ها</div>
+              <div class="text-slate text-xs mt-2">مشاهدهٔ تعامل و رشد نوشته‌های شما در زمان.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- footer -->
+      <footer class="bg-midnight text-white py-12">
+        <div class="container mx-auto px-6">
+          <div class="grid md:grid-cols-4 gap-8">
+            <div>
+              <h3 class="text-xl font-bold mb-4">NoteForge</h3>
+              <p class="text-white/70">
+                جایی که ایده‌ها به واقعیت تبدیل می‌شوند.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-semibold mb-4">شرکت</h4>
+              <ul class="space-y-2">
+                <li>
+                  <a href="#" class="text-white/70 hover:text-sage">درباره ما</a>
+                </li>
+                <li>
+                  <a href="#" class="text-white/70 hover:text-sage">فرصت‌های شغلی</a>
+                </li>
+                <li>
+                  <a href="#" class="text-white/70 hover:text-sage">بلاگ</a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 class="font-semibold mb-4">قوانین</h4>
+              <ul class="space-y-2">
+                <li><a href="#" class="text-white/70 hover:text-sage">حریم خصوصی</a></li>
+                <li><a href="#" class="text-white/70 hover:text-sage">شرایط استفاده</a></li>
+                <li><a href="#" class="text-white/70 hover:text-sage">کوکی‌ها</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 class="font-semibold mb-4">ارتباط با ما</h4>
+              <div class="flex gap-4">
+                <a href="#" class="p-2 rounded-full bg-white/10 hover:bg-sage/20">
+                  <i data-feather="twitter" class="w-5 h-5"></i>
+                </a>
+                <a href="#" class="p-2 rounded-full bg-white/10 hover:bg-sage/20">
+                  <i data-feather="instagram" class="w-5 h-5"></i>
+                </a>
+                <a href="#" class="p-2 rounded-full bg-white/10 hover:bg-sage/20">
+                  <i data-feather="linkedin" class="w-5 h-5"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-white/10 mt-12 pt-8 text-center text-white/50 text-sm">
+            © 2025 NoteForge. همه حقوق محفوظ است.
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+      feather.replace();
+      AOS.init({ duration: 800, once: true, easing: "ease-out-cubic" });
+    </script>
+  </body>
+</html>

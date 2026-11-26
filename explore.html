@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نوت‌فورج — اکسپلور</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #F5F1E9;
+      --muted: #6B7A8F;
+      --sage: #86B3A2;
+      --accent: #7c3aed;
+      --midnight: #1A2930;
+
+      --left-width: clamp(120px, 10vw, 180px);
+      --right-width: clamp(220px, 22vw, 360px);
+
+      --gap: 20px;
+      --transition: 320ms cubic-bezier(.2,.9,.2,1);
+      --top-offset: 84px;
+      --content-max: 1400px;
+      --sticky-top: calc(var(--top-offset) + 8px);
+    }
+
+    html,body{
+      height:100%;margin:0;font-family:"Vazirmatn",sans-serif;background:var(--bg);color:var(--midnight);
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      overflow-y: auto;
+    }
+    a{color:inherit;text-decoration:none}
+
+    .topbar{position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:1px solid rgba(0,0,0,0.04);z-index:60}
+    .topbar-inner{max-width:var(--content-max);margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+    .brand{font-weight:800;font-size:20px}
+    .controls{display:flex;gap:8px;align-items:center}
+
+    .icon-circle{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .icon-circle:hover{background:rgba(0,0,0,0.03)}
+
+    .search{flex:1;max-width:680px;margin:0 18px}
+    .search .box{display:flex;align-items:center;background:#f1f3f5;padding:8px 12px;border-radius:999px}
+    .search input{border:0;background:transparent;outline:0;width:100%;font-size:14px;padding-right:6px}
+
+    main{max-width:var(--content-max);margin:calc(var(--top-offset) + 8px) auto 40px;padding:0 18px}
+    .grid-wrap{
+      display:grid;
+      gap:var(--gap);
+      align-items:start;
+      grid-template-columns: var(--left-width) minmax(0, 1fr) var(--right-width);
+      grid-template-areas: "nav main aside";
+      transition: grid-template-columns var(--transition);
+    }
+
+    .col-nav{
+      grid-area:nav;
+      width:var(--left-width);
+      position: sticky;
+      top: var(--sticky-top);
+      align-self: start;
+      height: fit-content;
+      transition: width var(--transition),opacity var(--transition),transform var(--transition),top 120ms;
+      overflow: visible;
+      z-index: 30;
+    }
+
+    .col-aside{
+      grid-area:aside;
+      width:var(--right-width);
+      position: sticky;
+      top: var(--sticky-top);
+      align-self: start;
+      height: fit-content;
+      transition: width var(--transition),opacity var(--transition),transform var(--transition),top 120ms;
+      overflow: visible;
+      z-index: 20;
+    }
+
+    .col-main{grid-area:main;min-width:0}
+    .center-wrap{min-width:0}
+
+    body.hide-left .grid-wrap{
+      grid-template-columns: 0 minmax(0, 1fr) var(--right-width);
+    }
+    body.hide-left .col-nav{
+      width:0 !important;
+      opacity:0;
+      transform:translateX(12px) scale(.98);
+      display:none;
+    }
+
+    @media (max-width: 1024px){
+      .grid-wrap{grid-template-columns:1fr;grid-template-areas:"main";padding:0}
+      .col-nav,.col-aside{display:none}
+      .topbar-inner{padding:8px 12px}
+      .search{max-width:unset}
+    }
+
+    .panel{
+      background:#fff;border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(13,17,23,0.04);
+      border:1px solid rgba(16,24,40,0.03);
+      transition:box-shadow 220ms, transform 220ms;
+    }
+
+    .nav-list{display:flex;flex-direction:column;gap:8px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;font-weight:600;cursor:pointer}
+    .nav-item.active{background:#f8fafc;box-shadow:0 1px 0 rgba(16,24,40,0.03)}
+
+    .following .person{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px}
+
+    .feed{display:flex;flex-direction:column;gap:14px}
+    .story{
+      display:flex;gap:16px;align-items:flex-start;min-width:0;
+      opacity:0;transform:translateY(14px);transition:opacity var(--transition),transform var(--transition);
+      border-radius:10px;padding:12px;cursor:pointer;
+    }
+    .story.in-view{opacity:1;transform:none}
+    .story .meta{flex:1;min-width:0}
+    .story .thumb{width:170px;height:110px;border-radius:8px;background-size:cover;background-position:center;flex-shrink:0}
+
+    .story .pub{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .story .title{font-weight:800;font-size:20px;margin:0 0 8px;line-height:1.15}
+    .story .excerpt{color:var(--muted);margin:0 0 10px}
+
+    .story .meta-bottom{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .small-meta{font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:center}
+
+    .actions{display:flex;gap:8px;align-items:center}
+    .action-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(16,24,40,0.04);background:transparent;cursor:pointer;font-size:13px;transition:transform 160ms}
+    .action-btn:hover{transform:translateY(-4px)}
+    .action-btn svg{width:16px;height:16px}
+    .action-btn.liked{color:#ef4444;background:rgba(239,68,68,0.07);border-color:rgba(239,68,68,0.12)}
+    .action-btn.saved{color:var(--accent);background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.14)}
+
+    .staff-list{display:flex;flex-direction:column;gap:10px;opacity:0;transform:translateY(8px);transition:opacity var(--transition),transform var(--transition)}
+    .staff-list.in-view{opacity:1;transform:none}
+    .staff-item{display:flex;gap:10px;align-items:flex-start}
+    .staff-item .thumb{width:72px;height:56px;border-radius:6px;background-size:cover;background-position:center;flex-shrink:0}
+
+    .topics-panel{margin-top:12px}
+    .topics-grid{display:flex;flex-wrap:wrap;gap:8px}
+    .topic-bubble{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 12px;border-radius:999px;background:#f3f4f6;color:var(--midnight);font-weight:700;font-size:13px;
+      box-shadow:0 6px 14px rgba(16,24,40,0.04);cursor:pointer;transform-origin:center;
+      transition:transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 180ms, background 180ms, opacity var(--transition);
+      opacity:0;transform:translateY(8px) scale(.98);
+    }
+    .topic-bubble.in-view{opacity:1;transform:none}
+
+    .recommend{margin-top:14px;padding:12px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfbfb);box-shadow:0 6px 18px rgba(13,17,23,0.03);border:1px solid rgba(16,24,40,0.03)}
+    .recommend .person{display:flex;gap:10px;align-items:center;padding:8px;border-radius:8px;transition:background 160ms}
+    .recommend .person:hover{background:rgba(16,24,40,0.03)}
+    .recommend .person .info{flex:1;text-align:right}
+    .follow-btn{background:var(--sage);color:#fff;padding:8px 12px;border-radius:999px;font-weight:700;border:0;cursor:pointer;transition:transform 160ms}
+    .follow-btn:hover{transform:translateY(-3px)}
+    .follow-btn.following{background:#fff;color:var(--sage);border:1px solid rgba(134,179,162,0.14)}
+
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .mini-card{background:#fff;padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);box-shadow:0 4px 12px rgba(0,0,0,0.03)}
+    .muted{color:var(--muted);font-size:13px}
+    .profile-preview{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);background:linear-gradient(180deg,#fff,#fbfbfb)}
+  </style>
+</head>
+<body>
+  <header class="topbar" role="banner">
+    <div class="topbar-inner">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="toggleLeft" class="icon-circle" aria-label="باز/بستن فهرست" title="باز/بستن فهرست" aria-expanded="true">
+          <svg viewBox="0 0 18 12" width="18" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="18" height="2" rx="1" fill="#111827"/>
+            <rect y="5" width="18" height="2" rx="1" fill="#111827" opacity="0.7"/>
+            <rect y="10" width="18" height="2" rx="1" fill="#111827" opacity="0.5"/>
+          </svg>
+        </button>
+
+        <div class="brand" aria-hidden="true" style="padding-right:10px">نوت‌فورج</div>
+      </div>
+
+      <div class="search">
+        <div class="box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="opacity:.6;margin-left:8px">
+            <path d="M21 21l-4.35-4.35" stroke="#111827" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="11" cy="11" r="6" stroke="#111827" stroke-width="1.6" opacity="0.6"/>
+          </svg>
+          <input id="searchInput" placeholder="جستجو" aria-label="جستجو"/>
+        </div>
+      </div>
+
+      <div class="controls" style="gap:10px">
+        <a href="./write.html">
+          <button class="icon-circle" title="نوشتن" aria-label="نوشتن">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" fill="#111827"/><path d="M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#111827"/></svg>
+          </button>
+        </a>
+        <button class="icon-circle" title="اعلان‌ها" aria-label="اعلان‌ها">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22a2.5 2.5 0 0 0 2.45-2H9.55A2.5 2.5 0 0 0 12 22z" fill="#111827"/><path d="M18 16V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2z" fill="#111827" opacity="0.9"/></svg>
+        </button>
+        <div id="avatarDot" style="width:36px;height:36px;border-radius:999px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700">V</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid-wrap" id="grid">
+      <aside class="col-nav">
+        <div class="panel" id="navPanel">
+          <nav class="nav-list" aria-label="ناوبری">
+            <a class="nav-item active" href="#" data-route="home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11.5L12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8.5z" fill="#111827"/></svg>خانه</a>
+            <a class="nav-item" href="#" data-route="library">کتابخانه</a>
+            <a class="nav-item" href="#" data-route="profile">پروفایل</a>
+            <a class="nav-item" href="#" data-route="stories">داستان‌ها</a>
+            <a class="nav-item" href="#" data-route="stats">آمار</a>
+          </nav>
+
+          <hr class="my-4" style="border-color:rgba(0,0,0,0.06)"/>
+
+          <div class="following">
+            <h4 style="font-weight:700;margin-bottom:8px">افرادی که دنبال می‌کنید</h4>
+            <a href="./profile.html"><div class="person"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover" alt=""><div style="margin-right:8px"><div style="font-weight:600">ندا رضایی</div><div style="font-size:12px;color:var(--muted)">نویسنده</div></div></div></a>
+            <a href="./profile.html"><div class="person"><img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=200&auto=format&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover" alt=""><div style="margin-right:8px"><div style="font-weight:600">امیر موسوی</div><div style="font-size:12px;color:var(--muted)">نویسنده</div></div></div></a>
+          </div>
+        </div>
+      </aside>
+
+      <section class="col-main center-wrap">
+        <div class="panel" id="mainPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <h1 id="mainTitle" style="font-size:22px;font-weight:800;margin:0">اکسپلور</h1>
+            <div id="mainSub" class="muted" style="font-size:13px">منتخب امروز</div>
+          </div>
+
+          <div id="mainContent">
+            <div id="feed" class="feed" aria-live="polite"></div>
+
+            <div style="display:flex;justify-content:center;margin-top:12px">
+              <button id="loadMore" class="px-5 py-2 rounded-full border bg-white">بارگذاری بیشتر</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="col-aside" id="rightColumn">
+        <div class="panel" id="staffPanel">
+          <div id="asideContent">
+            <h3 style="margin:0 0 10px 0;font-weight:700">انتخاب سردبیر</h3>
+            <div id="staffList" class="staff-list"></div>
+
+            <div class="topics-panel" aria-hidden="false">
+              <h4 style="margin:12px 0 8px 0;font-weight:700">موضوعات</h4>
+              <div id="topicsGrid" class="topics-grid" aria-live="polite"></div>
+            </div>
+
+            <div class="recommend" style="margin-top:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-weight:700">پیشنهاد آدم‌ها</div>
+                <div style="font-size:12px;color:var(--muted)">پیشنهاد شده برای شما</div>
+              </div>
+
+              <div id="recommendList"></div>
+            </div>
+
+            <div style="margin-top:12px;background:rgba(134,179,162,0.08);padding:12px;border-radius:8px">
+              <div style="font-weight:700">نوت‌فورج در حال نوشتن</div>
+              <div style="color:var(--muted);font-size:13px;margin-top:6px">وبینار «نحوه نوشتن بهتر»</div>
+              <a href="./write.html">
+                <button style="margin-top:10px;background:var(--sage);color:#fff;padding:8px 12px;border-radius:8px">شروع به نوشتن</button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    feather.replace();
+
+    const STORIES = [
+      { id:'s1', pub:'در زمان کوتاه', author:'متا مارولیا', title:'چالش نوشتن: نامه نوامبر', excerpt:'چطور خلاقیت‌تان را هر روز پرورش دهید.', thumb:'https://images.unsplash.com/photo-1529251333259-d36cccaf22ea?q=80&w=860&auto=format&fit=crop', time:'۲ روز قبل', likes:1000, responses:13, saved:false, liked:false },
+      { id:'s2', pub:'دنیای نوشتن', author:'امیت گوپتا', title:'۱۴ نشانه که شما به نویسنده‌ای برجسته تبدیل می‌شوید', excerpt:'نکاتی که ممکن است متوجهشان نباشید اما در حال رخ دادن‌اند.', thumb:'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop', time:'۱۶ اکتبر', likes:1300, responses:39, saved:false, liked:false },
+      { id:'s3', pub:'قسمت‌های انسانی', author:'بنژامین اسلج', title:'۲۰ سال از حمله به عراق گذشت؛ هنوز در بیابانم', excerpt:'خاطراتی شخصی از آن دوره سخت.', thumb:'https://images.unsplash.com/photo-1500252185289-40ca85eb23a7?q=80&w=871&auto=format&fit=crop', time:'۲۰ مارس ۲۰۲۳', likes:2100, responses:88, saved:false, liked:false },
+      { id:'s4', pub:'خاطرات دی‌آی‌وای', author:'هیلده فسترلینگ', title:'چگونه تمام کدو تنبل را استفاده کنیم', excerpt:'از دانه‌ها تا پوره — هیچ چیزی دور ریخته نمی‌شود.', thumb:'https://images.unsplash.com/photo-1506806732259-39c2d0268443?q=80&w=800&auto=format&fit=crop', time:'۴ روز قبل', likes:540, responses:11, saved:false, liked:false },
+      { id:'s5', pub:'مجله طراحی', author:'زولی', title:'طراحی برای توجه: میکروکپی موثر', excerpt:'واژگان کوچک که خواننده را جابه‌جا می‌کنند.', thumb:'https://images.unsplash.com/photo-1592431913823-7af6b323da9b?q=80&w=870&auto=format&fit=crop', time:'۳ مارس', likes:980, responses:22, saved:false, liked:false },
+      { id:'s6', pub:'رایان مک‌نات', author:'نوامبر ۳', title:'به ردبول ۲۰۲۵ خوش آمدید', excerpt:'نگاهی به آینده مسابقات ردبول.', thumb:'https://images.unsplash.com/photo-1516455207990-7a41ce80f7ee?q=80&w=800&auto=format&fit=crop', time:'نوامبر ۳', likes:760, responses:18, saved:false, liked:false },
+    ];
+
+    const STAFF = [
+      { title:'۲۰ سال از حمله به عراق گذشت؛ هنوز در بیابانم', meta:'در قسمت‌های انسانی — بنژامین اسلج', thumb:'https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?q=80&w=800&auto=format&fit=crop' },
+      { title:'چگونه تمام کدو تنبل را استفاده کنیم', meta:'در خاطرات دی‌آی‌وای — هیلده فسترلینگ', thumb:'https://images.unsplash.com/photo-1506806732259-39c2d0268443?q=80&w=800&auto=format&fit=crop' },
+      { title:'به ردبول ۲۰۲۵ خوش آمدید', meta:'رایان مک‌نات — نوامبر ۳', thumb:'https://images.unsplash.com/photo-1516455207990-7a41ce80f7ee?q=80&w=800&auto=format&fit=crop' }
+    ];
+
+    const TOPICS = ["فناوری","نویسندگی","هوش مصنوعی","طراحی","خودبهبودی","استارتاپ","فرهنگ","آشپزی"];
+
+    const RECOMMEND = [
+      { name: "آرمان کریمی", bio: "نویسنده محصول", avatar: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=200&auto=format&fit=crop&crop=faces", following: false },
+      { name: "سارا مرادی", bio: "طراح تجربه", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=200&auto=format&fit=crop&crop=faces", following: false },
+      { name: "مهدی نادری", bio: "نویسنده فنی", avatar: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=200&auto=format&fit=crop&crop=faces", following: false },
+      { name: "لیلا رضایی", bio: "منتقد ادبی", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=200&auto=format&fit=crop&crop=faces", following: false }
+    ];
+
+    const toggleLeft = document.getElementById('toggleLeft');
+    const mainTitle = document.getElementById('mainTitle');
+    const mainSub = document.getElementById('mainSub');
+    const mainPanel = document.getElementById('mainPanel');
+    const mainContent = document.getElementById('mainContent');
+    const rightColumn = document.getElementById('rightColumn');
+    const navItems = Array.from(document.querySelectorAll('.nav-item'));
+    const avatarDot = document.getElementById('avatarDot');
+    const topbar = document.querySelector('.topbar');
+    const gridWrap = document.getElementById('grid');
+
+    function esc(s){ return String(s||''); }
+    function formatCount(n){ if(n>=1_000_000) return (n/1_000_000).toFixed(1).replace(/\.0$/,'')+'M'; if(n>=1_000) return (n/1_000).toFixed(1).replace(/\.0$/,'')+'K'; return String(n); }
+    function getFeedContainer(){
+      return mainContent.querySelector('#feed') || document.getElementById('feed') || (() => { const f = document.createElement('div'); f.id='feed'; f.className='feed'; mainContent.appendChild(f); return f; })();
+    }
+
+    const revealObserver = new IntersectionObserver((entries)=>{
+      entries.forEach(ent=>{
+        if(ent.isIntersecting){
+          ent.target.classList.add('in-view');
+          revealObserver.unobserve(ent.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    function observeInViewAll(selectorRoot){
+      if(!selectorRoot) return;
+      if(typeof selectorRoot === 'string'){
+        document.querySelectorAll(selectorRoot).forEach(el=> revealObserver.observe(el));
+      } else {
+        selectorRoot.querySelectorAll('.story, .staff-item, .topic-bubble, .person').forEach(el => revealObserver.observe(el));
+      }
+    }
+
+    function renderStaff(root){
+      root = root || document.getElementById('staffList');
+      if(!root) return;
+      root.innerHTML = '';
+
+      if(!Array.isArray(STAFF) || STAFF.length === 0){
+        const empty = document.createElement('div');
+        empty.className = 'staff-item';
+        empty.innerHTML = `<div style="flex:1"><div style="font-weight:700">مطلبی یافت نشد</div><div class="muted" style="margin-top:6px">بعداً بروزرسانی خواهد شد.</div></div>`;
+        root.appendChild(empty);
+        root.classList.add('in-view');
+        empty.classList.add('in-view');
+        return;
+      }
+
+      STAFF.forEach((s, idx)=>{
+        const div = document.createElement('div');
+        div.className = 'staff-item';
+        div.innerHTML = `<div style="flex:1"><div style="font-weight:700">${esc(s.title)}</div><div style="font-size:13px;color:var(--muted);margin-top:6px">${esc(s.meta)}</div></div><div class="thumb" style="background-image:url(${s.thumb})"></div>`;
+        root.appendChild(div);
+        setTimeout(()=> div.classList.add('in-view'), 60 * idx);
+        revealObserver.observe(div);
+      });
+
+      setTimeout(()=> root.classList.add('in-view'), 30);
+    }
+
+    function createCard(data){
+      const art = document.createElement('article');
+      art.className = 'story';
+      art.setAttribute('role','article');
+      art.setAttribute('tabindex','0');
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+
+      const pub = document.createElement('div');
+      pub.className = 'pub';
+      pub.innerHTML = `<img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=60&auto=format&fit=crop&crop=faces" alt="" style="width:18px;height:18px;border-radius:4px;object-fit:cover;margin-left:6px">در ${esc(data.pub)} • ${esc(data.author)}`;
+
+      const title = document.createElement('h3');
+      title.className = 'title';
+      title.textContent = data.title;
+
+      const excerpt = document.createElement('p');
+      excerpt.className = 'excerpt';
+      excerpt.textContent = data.excerpt;
+
+      const bottom = document.createElement('div');
+      bottom.className = 'meta-bottom';
+
+      const smallMeta = document.createElement('div');
+      smallMeta.className = 'small-meta';
+      smallMeta.innerHTML = `⏱ ${esc(data.time)}`;
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const likeBtn = document.createElement('button');
+      likeBtn.className = 'action-btn';
+      likeBtn.innerHTML = `<i data-feather="heart"></i><span class="count">${formatCount(data.likes)}</span>`;
+      likeBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        data.liked = !data.liked;
+        if(data.liked){ data.likes++ ; likeBtn.classList.add('liked'); likeBtn.setAttribute('aria-pressed','true'); }
+        else { data.likes = Math.max(0,data.likes-1); likeBtn.classList.remove('liked'); likeBtn.setAttribute('aria-pressed','false'); }
+        likeBtn.querySelector('.count').textContent = formatCount(data.likes);
+        feather.replace();
+      });
+
+      const commentBtn = document.createElement('button');
+      commentBtn.className = 'action-btn';
+      commentBtn.innerHTML = `<i data-feather="message-circle"></i><span class="count">${formatCount(data.responses)}</span>`;
+      commentBtn.addEventListener('click', (e)=>{ e.stopPropagation(); alert('نمایش نظرات: ' + data.title); });
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'action-btn';
+      saveBtn.innerHTML = `<i data-feather="bookmark"></i><span class="save-text">${data.saved ? 'ذخیره‌شده' : 'ذخیره'}</span>`;
+      saveBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        data.saved = !data.saved;
+        saveBtn.classList.toggle('saved', data.saved);
+        saveBtn.querySelector('span.save-text').textContent = data.saved ? 'ذخیره‌شده' : 'ذخیره';
+        feather.replace();
+      });
+
+      const shareBtn = document.createElement('button');
+      shareBtn.className = 'action-btn';
+      shareBtn.innerHTML = `<i data-feather="share-2"></i><span>اشتراک</span>`;
+      shareBtn.addEventListener('click', async (e)=>{
+        e.stopPropagation();
+        const url = location.origin + '/article.html?id=' + encodeURIComponent(data.id);
+        if(navigator.share){
+          try{ await navigator.share({ title: data.title, text: data.excerpt, url }); } catch(e){ }
+        } else {
+          try{
+            await navigator.clipboard.writeText(url);
+            const prev = shareBtn.innerHTML;
+            shareBtn.innerHTML = `<i data-feather="check"></i><span>کپی شد</span>`;
+            feather.replace();
+            setTimeout(()=>{ shareBtn.innerHTML = prev; feather.replace(); },1300);
+          }catch(e){ alert('آدرس کپی نشد: ' + url); }
+        }
+      });
+
+      actions.append(likeBtn, commentBtn, saveBtn, shareBtn);
+
+      bottom.append(smallMeta, actions);
+
+      meta.append(pub, title, excerpt, bottom);
+
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      thumb.style.backgroundImage = `url(${data.thumb})`;
+
+      art.append(meta, thumb);
+
+      art.addEventListener('click', ()=> location.href = 'article.html?id=' + encodeURIComponent(data.id) );
+      art.addEventListener('keydown', (e)=> { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); location.href = 'article.html?id=' + encodeURIComponent(data.id); } });
+
+      feather.replace();
+      return art;
+    }
+
+    let page = 0;
+    const PAGE = 3;
+    let items = STORIES.slice();
+
+    function renderNext(reset=false){
+      const feedEl = getFeedContainer();
+      if(reset){ page = 0; feedEl.innerHTML = ''; }
+      const slice = items.slice(page*PAGE, page*PAGE+PAGE);
+      slice.forEach(s=>{
+        const card = createCard(s);
+        feedEl.appendChild(card);
+      });
+      page++;
+      const loadMoreBtn = mainContent.querySelector('#loadMore') || document.getElementById('loadMore');
+      if(loadMoreBtn){
+        if(page*PAGE >= items.length) loadMoreBtn.style.display='none'; else loadMoreBtn.style.display='inline-block';
+      }
+      feedEl.querySelectorAll('.story').forEach(el => revealObserver.observe(el));
+      feather.replace();
+    }
+
+    function renderTopics(root){
+      root = root || document.getElementById('topicsGrid');
+      if(!root) return;
+      root.innerHTML = '';
+      TOPICS.forEach((t, i)=>{
+        const el = document.createElement('button');
+        el.className = 'topic-bubble';
+        el.innerText = t;
+        el.addEventListener('click', ()=> {
+          el.animate([{transform:'scale(1)'},{transform:'scale(0.96)'},{transform:'scale(1)'}], {duration:260});
+        });
+        root.appendChild(el);
+        setTimeout(()=> el.classList.add('in-view'), 40*i);
+        revealObserver.observe(el);
+      });
+      root.parentElement?.classList?.add('in-view');
+    }
+
+    function renderRecommend(root){
+      root = root || document.getElementById('recommendList');
+      if(!root) return;
+      root.innerHTML = '';
+      RECOMMEND.forEach((p, idx)=>{
+        const row = document.createElement('div');
+        row.className = 'person';
+        row.innerHTML = `<img src="${p.avatar}" alt="${esc(p.name)}" class="w-10 h-10 rounded-full object-cover"><div class="info"><div style="font-weight:700">${esc(p.name)}</div><div style="font-size:12px;color:var(--muted)">${esc(p.bio)}</div></div>`;
+        const btn = document.createElement('button');
+        btn.className = 'follow-btn';
+        btn.innerText = p.following ? 'دنبال‌شده' : 'دنبال کن';
+        btn.addEventListener('click', ()=>{
+          p.following = !p.following;
+          btn.classList.toggle('following', p.following);
+          btn.innerText = p.following ? 'دنبال‌شده' : 'دنبال کن';
+        });
+        row.appendChild(btn);
+        root.appendChild(row);
+        row.style.opacity = 0;
+        row.style.transform = 'translateY(8px)';
+        setTimeout(()=> { row.style.transition = `all ${200 + idx*80}ms ease`; row.style.opacity=1; row.style.transform='none'; }, 120 + idx*80);
+      });
+    }
+
+    function updateStickyOffsets(){
+      const topHeight = topbar ? topbar.getBoundingClientRect().height : 84;
+      const gap = 8;
+      const topPx = Math.round(topHeight + gap);
+      document.querySelectorAll('.col-nav, .col-aside').forEach(el=>{
+        if(el) el.style.top = topPx + 'px';
+      });
+    }
+
+    toggleLeft.addEventListener('click', ()=>{
+      const hidden = document.body.classList.toggle('hide-left');
+      toggleLeft.setAttribute('aria-expanded', String(!hidden));
+
+      if (gridWrap) {
+        if (hidden) {
+          gridWrap.style.gridTemplateColumns = '0 minmax(0, 1fr) var(--right-width)';
+        } else {
+          gridWrap.style.gridTemplateColumns = 'var(--left-width) minmax(0, 1fr) var(--right-width)';
+        }
+      }
+
+      try {
+        const feedEl = getFeedContainer();
+        feedEl.querySelectorAll('.story').forEach(el => revealObserver.observe(el));
+      } catch (e) { }
+
+      const staffList = document.getElementById('staffList');
+      if (staffList) revealObserver.observe(staffList);
+
+      requestAnimationFrame(updateStickyOffsets);
+    });
+
+    function setActiveNav(route){
+      navItems.forEach(i=>{
+        if(i.dataset.route === route) i.classList.add('active'); else i.classList.remove('active');
+      });
+    }
+
+    function showAside(yes){
+      if(yes){
+        rightColumn.style.display = '';
+        rightColumn.setAttribute('aria-hidden','false');
+        gridWrap.style.gridTemplateColumns = 'var(--left-width) minmax(0, 1fr) var(--right-width)';
+      } else {
+        rightColumn.style.display = 'none';
+        rightColumn.setAttribute('aria-hidden','true');
+        gridWrap.style.gridTemplateColumns = 'var(--left-width) minmax(0, 1fr) 0';
+      }
+      requestAnimationFrame(updateStickyOffsets);
+    }
+
+    function renderHomeAside(){
+      const aside = document.getElementById('asideContent');
+      aside.innerHTML = `
+        <h3 style="margin:0 0 10px 0;font-weight:700">انتخاب سردبیر</h3>
+        <div id="staffList" class="staff-list"></div>
+
+        <div class="topics-panel" aria-hidden="false">
+          <h4 style="margin:12px 0 8px 0;font-weight:700">موضوعات</h4>
+          <div id="topicsGrid" class="topics-grid" aria-live="polite"></div>
+        </div>
+
+        <div class="recommend" style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:700">پیشنهاد آدم‌ها</div>
+            <div style="font-size:12px;color:var(--muted)">پیشنهاد شده برای شما</div>
+          </div>
+
+          <div id="recommendList"></div>
+        </div>
+
+        <div style="margin-top:12px;background:rgba(134,179,162,0.08);padding:12px;border-radius:8px">
+          <div style="font-weight:700">نوت‌فورج در حال نوشتن</div>
+          <div style="color:var(--muted);font-size:13px;margin-top:6px">وبینار «نحوه نوشتن بهتر»</div>
+          <a href="./write.html">
+            <button style="margin-top:10px;background:var(--sage);color:#fff;padding:8px 12px;border-radius:8px">شروع به نوشتن</button>
+          </a>
+        </div>
+      `;
+      renderStaff(document.getElementById('staffList'));
+      renderTopics(document.getElementById('topicsGrid'));
+      renderRecommend(document.getElementById('recommendList'));
+      const staffRoot = document.getElementById('staffList');
+      staffRoot?.classList?.add('in-view');
+      requestAnimationFrame(updateStickyOffsets);
+    }
+
+    function renderHomeMain(){
+      mainContent.innerHTML = `
+        <div id="feed" class="feed" aria-live="polite"></div>
+        <div style="display:flex;justify-content:center;margin-top:12px">
+          <button id="loadMore" class="px-5 py-2 rounded-full border bg-white">بارگذاری بیشتر</button>
+        </div>
+      `;
+      items = STORIES.slice();
+      renderNext(true);
+      const lb = mainContent.querySelector('#loadMore');
+      if(lb) lb.addEventListener('click', ()=> renderNext(false));
+      requestAnimationFrame(updateStickyOffsets);
+    }
+
+    function renderLibraryMain(){
+      const saved = STORIES.filter(s=>s.saved);
+      mainContent.innerHTML = `
+        <div style="margin-bottom:10px">
+          <strong>کتابخانه شما</strong>
+          <div class="muted" style="margin-top:6px">مقالاتی که ذخیره کرده‌اید</div>
+        </div>
+        <div id="libraryGrid" class="card-grid"></div>
+      `;
+      const grid = document.getElementById('libraryGrid');
+      if(!saved.length){
+        const msg = document.createElement('div');
+        msg.className = 'mini-card';
+        msg.innerHTML = `<div class="muted">هیچ مقاله‌ای ذخیره نشده است. می‌توانید از صفحه اکسپلور مقالات را ذخیره کنید تا اینجا نمایش داده شوند.</div>`;
+        grid.appendChild(msg);
+      } else {
+        saved.forEach(s => {
+          const c = document.createElement('div');
+          c.className = 'mini-card';
+          c.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div style="width:84px;height:64px;border-radius:8px;background-size:cover;background-position:center;background-image:url(${s.thumb})"></div><div style="flex:1"><div style="font-weight:700">${esc(s.title)}</div><div class="muted" style="margin-top:6px">${esc(s.author)} • ${esc(s.time)}</div></div></div>`;
+          grid.appendChild(c);
+        });
+      }
+      requestAnimationFrame(updateStickyOffsets);
+    }
+
+    function renderStoriesMain(){
+      mainContent.innerHTML = `
+        <div style="margin-bottom:8px"><strong>همه داستان‌ها</strong><div class="muted" style="margin-top:6px">جدیدترین‌ها از نویسندگان برتر</div></div>
+        <div id="feed" class="feed" aria-live="polite"></div>
+        <div style="display:flex;justify-content:center;margin-top:12px">
+          <button id="loadMore" class="px-5 py-2 rounded-full border bg-white">بارگذاری بیشتر</button>
+        </div>
+      `;
+      items = STORIES.slice().reverse();
+      renderNext(true);
+      const lb = mainContent.querySelector('#loadMore');
+      if(lb) lb.addEventListener('click', ()=> renderNext(false));
+      requestAnimationFrame(updateStickyOffsets);
+    }
+
+    function renderStatsMain(){
+      mainContent.innerHTML = `
+        <div style="margin-bottom:8px"><strong>آمار و تجزیه و تحلیل</strong><div class="muted" style="margin-top:6px">نمای کلی عملکرد شما در بازه‌های زمانی مختلف</div></div>
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:start">
+          <div class="mini-card">
+            <canvas id="statsChart" width="600" height="300"></canvas>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="mini-card">
+              <div style="font-weight:800;font-size:20px">5.2K</div><div class="muted">بازدید کل این ماه</div>
+            </div>
+            <div class="mini-card">
+              <div style="font-weight:800;font-size:20px">120</div><div class="muted">مطالب منتشر شده</div>
+            </div>
+            <div class="mini-card">
+              <div style="font-weight:800;font-size:20px">18</div><div class="muted">میانگین پاسخ در هر مطلب</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const ctx = document.getElementById('statsChart').getContext('2d');
+      const labels = ['هفتهٔ ۱','هفتهٔ ۲','هفتهٔ ۳','هفتهٔ ۴','هفتهٔ ۵'];
+      const data = [420, 820, 1100, 700, 1050];
+      if(window.__statsChart instanceof Chart) {
+        window.__statsChart.destroy();
+      }
+      window.__statsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'بازدیدها',
+            data,
+            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#7c3aed',
+            backgroundColor: 'rgba(124,58,237,0.08)',
+            tension: 0.35,
+            fill: true,
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: {color: '#333'} },
+            x: { ticks: {color: '#333'} }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      requestAnimationFrame(updateStickyOffsets);
+    }
+
+    function renderProfileMain(){
+      const savedProfile = JSON.parse(localStorage.getItem('nf_profile') || '{}');
+      const displayName = savedProfile.displayName || 'نام شما';
+      const username = savedProfile.username || 'username';
+      const bio = savedProfile.bio || 'خلاصه‌ای کوتاه درباره‌ی خودتان...';
+      const accent = savedProfile.accent || '#7c3aed';
+      const website = savedProfile.website || '';
+      const isPrivate = savedProfile.isPrivate ? 'checked' : '';
+
+      mainContent.innerHTML = `
+        <div style="display:flex;gap:12px">
+          <div style="flex:1">
+            <div class="muted" style="margin-bottom:8px">ویرایش پروفایل</div>
+            <form id="profileForm" style="display:flex;flex-direction:column;gap:10px">
+              <label style="display:flex;flex-direction:column;gap:6px">نام نمایشی
+                <input name="displayName" value="${escapeHtml(displayName)}" class="p-2 border rounded" style="border:1px solid rgba(16,24,40,0.06)">
+              </label>
+
+              <label style="display:flex;flex-direction:column;gap:6px">نام کاربری
+                <input name="username" value="${escapeHtml(username)}" class="p-2 border rounded" style="border:1px solid rgba(16,24,40,0.06)">
+              </label>
+
+              <label style="display:flex;flex-direction:column;gap:6px">بیوگرافی
+                <textarea name="bio" rows="3" class="p-2 border rounded" style="border:1px solid rgba(16,24,40,0.06)">${escapeHtml(bio)}</textarea>
+              </label>
+
+              <label style="display:flex;flex-direction:column;gap:6px">آدرس وب‌سایت
+                <input name="website" value="${escapeHtml(website)}" class="p-2 border rounded" style="border:1px solid rgba(16,24,40,0.06)">
+              </label>
+
+              <label style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" name="isPrivate" ${isPrivate}>
+                <span class="muted">حساب خصوصی (فقط دنبال‌شونده‌ها می‌توانند مطالب را ببینند)</span>
+              </label>
+
+              <div style="display:flex;gap:8px;align-items:center">
+                <label style="display:flex;align-items:center;gap:8px">رنگ برجسته
+                  <input type="color" name="accent" value="${escapeHtml(accent)}" style="width:42px;height:36px;border:0;background:none">
+                </label>
+
+                <label style="display:flex;flex-direction:column;gap:6px;flex:1">عکس پروفایل
+                  <input type="file" name="avatar" accept="image/*">
+                </label>
+              </div>
+
+              <div style="display:flex;gap:8px">
+                <button type="submit" style="background:var(--sage);color:#fff;padding:10px 14px;border-radius:8px;border:0">ذخیره</button>
+                <button type="button" id="resetProfile" style="background:#fff;border:1px solid rgba(0,0,0,0.06);padding:10px 14px;border-radius:8px">بازنشانی</button>
+              </div>
+            </form>
+          </div>
+
+          <div style="width:320px">
+            <div class="muted" style="margin-bottom:8px">پیش‌نمایش پروفایل</div>
+            <div id="profilePreview" class="profile-preview">
+              <div id="previewAvatar" style="width:64px;height:64px;border-radius:12px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:20px">${escapeHtml(displayName).charAt(0) || 'V'}</div>
+              <div style="flex:1">
+                <div id="previewName" style="font-weight:800">${escapeHtml(displayName)}</div>
+                <div id="previewUsername" class="muted">@${escapeHtml(username)}</div>
+                <div id="previewBio" class="muted" style="margin-top:8px">${escapeHtml(bio)}</div>
+              </div>
+            </div>
+            <div style="margin-top:10px" class="muted">تغییرات ذخیره‌شده در مرورگر شما نگهداری می‌شوند (localStorage). برای persist واقعی به سرور نیاز دارید.</div>
+          </div>
+        </div>
+      `;
+
+      const form = document.getElementById('profileForm');
+      const avatarInput = form.querySelector('input[name="avatar"]');
+      const previewAvatar = document.getElementById('previewAvatar');
+      const previewName = document.getElementById('previewName');
+      const previewUsername = document.getElementById('previewUsername');
+      const previewBio = document.getElementById('previewBio');
+
+      form.addEventListener('input', (e) => {
+        const fd = new FormData(form);
+        const dn = fd.get('displayName') || 'نام شما';
+        const un = fd.get('username') || 'username';
+        const bi = fd.get('bio') || '';
+        previewName.textContent = dn;
+        previewUsername.textContent = '@' + un;
+        previewBio.textContent = bi;
+        const accentColor = fd.get('accent') || '#7c3aed';
+        previewAvatar.style.background = accentColor;
+        document.documentElement.style.setProperty('--accent', accentColor);
+      });
+
+      avatarInput.addEventListener('change', (e) => {
+        const f = e.target.files && e.target.files[0];
+        if(!f) return;
+        const reader = new FileReader();
+        reader.onload = function(ev){
+          previewAvatar.style.backgroundImage = `url(${ev.target.result})`;
+          previewAvatar.textContent = '';
+        };
+        reader.readAsDataURL(f);
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const obj = {
+          displayName: fd.get('displayName'),
+          username: fd.get('username'),
+          bio: fd.get('bio'),
+          website: fd.get('website'),
+          accent: fd.get('accent'),
+          isPrivate: !!fd.get('isPrivate')
+        };
+        const f = avatarInput.files && avatarInput.files[0];
+        if(f){
+          const r = new FileReader();
+          r.onload = function(ev){
+            obj.avatarData = ev.target.result;
+            localStorage.setItem('nf_profile', JSON.stringify(obj));
+            applyProfileToUI(obj);
+            alert('پروفایل ذخیره شد');
+          };
+          r.readAsDataURL(f);
+        } else {
+          const prev = JSON.parse(localStorage.getItem('nf_profile') || '{}');
+          if(prev.avatarData) obj.avatarData = prev.avatarData;
+          localStorage.setItem('nf_profile', JSON.stringify(obj));
+          applyProfileToUI(obj);
+          alert('پروفایل ذخیره شد');
+        }
+      });
+
+      document.getElementById('resetProfile').addEventListener('click', ()=>{
+        localStorage.removeItem('nf_profile');
+        renderProfileMain();
+      });
+
+      if(savedProfile) applyProfileToUI(savedProfile);
+      requestAnimationFrame(updateStickyOffsets);
+    }
+
+    function applyProfileToUI(profile){
+      if(!profile) return;
+      if(profile.avatarData){
+        avatarDot.style.backgroundImage = `url(${profile.avatarData})`;
+        avatarDot.textContent = '';
+      } else {
+        avatarDot.style.background = profile.accent || getComputedStyle(document.documentElement).getPropertyValue('--accent');
+        avatarDot.textContent = (profile.displayName || 'V')[0] || 'V';
+      }
+      if(profile.accent) document.documentElement.style.setProperty('--accent', profile.accent);
+    }
+
+    function escapeHtml(s){
+      return String(s || '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+    }
+
+    function navigate(route, push=true){
+      setActiveNav(route);
+      const titles = {
+        home: 'اکسپلور',
+        library: 'کتابخانه',
+        profile: 'پروفایل — تنظیمات',
+        stories: 'داستان‌ها',
+        stats: 'آمار'
+      };
+      mainTitle.textContent = titles[route] || 'اکسپلور';
+      mainSub.textContent = route === 'home' ? 'منتخب امروز' : '';
+
+      if(route === 'home'){
+        showAside(true);
+        renderHomeMain();
+        renderHomeAside();
+      } else {
+        showAside(false);
+        if(route === 'library'){
+          renderLibraryMain();
+        } else if(route === 'profile'){
+          renderProfileMain();
+        } else if(route === 'stories'){
+          renderStoriesMain();
+        } else if(route === 'stats'){
+          renderStatsMain();
+        } else {
+          navigate('home', push);
+          return;
+        }
+      }
+
+      if(push) history.pushState({route}, '', '#' + route);
+      feather.replace();
+      requestAnimationFrame(updateStickyOffsets);
+    }
+
+    navItems.forEach(n=>{
+      n.addEventListener('click', (e)=>{
+        e.preventDefault();
+        const route = n.dataset.route || 'home';
+        navigate(route);
+      });
+    });
+
+    window.addEventListener('popstate', (e)=>{
+      const stateRoute = (e.state && e.state.route) || (location.hash ? location.hash.replace('#','') : 'home');
+      navigate(stateRoute, false);
+    });
+
+    window.addEventListener('resize', ()=> { requestAnimationFrame(updateStickyOffsets); });
+
+    (function init(){
+      renderRecommend();
+      renderTopics();
+      const initial = location.hash ? location.hash.replace('#','') : 'home';
+      const stored = JSON.parse(localStorage.getItem('nf_profile') || '{}');
+      if(Object.keys(stored).length) applyProfileToUI(stored);
+      navigate(initial, false);
+      const feedEl = getFeedContainer();
+      feedEl.querySelectorAll('.story').forEach(el => revealObserver.observe(el));
+      requestAnimationFrame(updateStickyOffsets);
+    })();
+
+    const savedProfile = JSON.parse(localStorage.getItem('nf_profile') || '{}');
+
+  </script>
+</body>
+</html>

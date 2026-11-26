@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نوت‌فورج — مقاله</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <!-- Better Persian fonts -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/shabnam-font@1.0.2/dist/shabnam.css">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #f5f1e9;
+      --muted: #6b7a8f;
+      --accent: #7c3aed;
+      --midnight: #1a2930;
+      --left-width: 150px;
+      --gap: 18px;
+      --top-offset: 84px;
+      --transition: 320ms cubic-bezier(.2,.9,.2,1);
+      --page-h-pad: 16px; /* small horizontal padding for breathing room */
+    }
+
+    html,body{
+      height:100%;margin:0;padding:0;font-family:"Vazirmatn",sans-serif;background:var(--bg);color:var(--midnight);
+      -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+      direction:rtl;
+    }
+    a{color:inherit;text-decoration:none}
+
+    /* Topbar (kept full-bleed but with small internal padding) */
+    .topbar{position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:1px solid rgba(0,0,0,0.04);z-index:60}
+    .topbar-inner{width:100%;margin:0;padding:10px var(--page-h-pad);display:flex;align-items:center;gap:12px;justify-content:space-between;box-sizing:border-box}
+    .brand{font-weight:800;font-size:20px}
+    .controls{display:flex;gap:8px;align-items:center}
+    .icon-circle{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .icon-circle:hover{background:rgba(0,0,0,0.03)}
+
+    .search{flex:1;max-width:680px;margin:0 12px}
+    .search .box{display:flex;align-items:center;background:#f1f3f5;padding:8px 12px;border-radius:999px}
+    .search input{border:0;background:transparent;outline:0;width:100%;font-size:14px;padding-right:6px}
+
+    /* main keeps small horizontal padding so content doesn't touch edges */
+    main{max-width:100%;margin:calc(var(--top-offset) + 8px) 0 40px;padding:0;box-sizing:border-box}
+    /* inner content wrapper to apply horizontal padding while keeping full-bleed header */
+    .page-inner{padding:0 var(--page-h-pad);box-sizing:border-box}
+
+    /* grid same as original */
+    .grid-wrap{display:grid;gap:var(--gap);align-items:start;grid-template-columns: var(--left-width) 1fr;grid-template-areas:"nav main";}
+    .col-nav{grid-area:nav;width:var(--left-width);position:sticky;top:calc(var(--top-offset) + 12px);height:fit-content;transition:width var(--transition),opacity var(--transition),transform var(--transition);overflow:hidden}
+    .col-main{grid-area:main;min-width:0}
+    body.hide-left .grid-wrap{grid-template-columns:0 1fr}
+    body.hide-left .col-nav{width:0 !important;opacity:0;transform:translateX(-12px) scale(.98);display:none}
+
+    @media (max-width:1024px){
+      .grid-wrap{grid-template-columns:1fr;grid-template-areas:"main";padding:0}
+      .col-nav{display:none}
+      .topbar-inner{padding:8px var(--page-h-pad)}
+      .search{max-width:unset}
+    }
+
+    .panel{background:#fff;border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(13,17,23,0.04);border:1px solid rgba(16,24,40,0.03);transition:box-shadow 220ms, transform 220ms}
+    .sticky-panel{position:static;top:0}
+    .nav-list{display:flex;flex-direction:column;gap:8px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;font-weight:600;cursor:pointer}
+    .nav-item.active{background:#f8fafc;box-shadow:0 1px 0 rgba(16,24,40,0.03)}
+    .following .person{display:flex;flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:8px;padding:8px;border-radius:8px}
+
+    /* ARTICLE: small side padding via .page-inner keeps everything tidy */
+    .article-wrap{background:transparent;padding:0;max-width:100%;margin:0}
+    .title{
+      font-family: "Shabnam","Vazirmatn",sans-serif;
+      font-size: clamp(28px, 3.8vw, 40px);
+      font-weight:700;
+      margin:6px 0 16px;
+      line-height:1.02;
+      letter-spacing:0.1px;
+    }
+    .meta{color:var(--muted);font-size:14px;margin-bottom:8px}
+    .author-info{display:flex;align-items:center;margin-bottom:20px;padding:0 0 12px 0;border-bottom:1px solid rgba(0,0,0,0.04)}
+    .author-info img{width:44px;height:44px;border-radius:999px;object-fit:cover;margin-right:12px}
+    .author-info .details{font-weight:600;line-height:1.4;text-align:right}
+    .author-info .details .date{color:var(--muted);font-weight:400;font-size:13px}
+
+    .hero{width:100%;height:420px;border-radius:12px;overflow:hidden;background:#eee;margin-bottom:18px}
+    .hero img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .content{
+      line-height:1.9;
+      color:#2b3a3f;
+      font-size:18px;
+      font-family:"Vazirmatn",sans-serif;
+      font-weight:400;
+      text-align:justify;
+      padding-bottom:6px;
+    }
+    .content p{margin:14px 0}
+    .content h2{font-size:22px;font-weight:700;margin:30px 0 15px;font-family:"Shabnam","Vazirmatn"}
+    .content blockquote{border-right:4px solid var(--accent);margin:20px 0;padding:12px 16px;background:rgba(124,58,237,0.05);border-radius:6px}
+
+    .actions-top,.actions-bottom{display:flex;justify-content:space-between;align-items:center;margin:30px 0;gap:10px}
+    .actions-left,.actions-right{display:flex;gap:10px;align-items:center}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;border:1px solid rgba(16,24,40,0.04);background:#fff;cursor:pointer;transition:background 160ms}
+    .btn:hover{background:rgba(16,24,40,0.02)}
+    .btn.liked{color:#ef4444;border-color:rgba(239,68,68,0.2);background:rgba(239,68,68,0.05)}
+    .btn.saved{color:var(--accent);border-color:rgba(124,58,237,0.2);background:rgba(124,58,237,0.05)}
+
+    .author-section{margin-top:50px;padding-top:30px;border-top:1px solid rgba(0,0,0,0.04)}
+    .author-card{display:flex;gap:16px;align-items:flex-start;padding:16px 0}
+    .author-card img{width:48px;height:48px;border-radius:5px;object-fit:cover}
+    .author-card .details{flex-grow:1;line-height:1.4;text-align:right}
+    .author-card .title{font-weight:700;font-size:16px;margin-bottom:2px}
+    .author-card .meta{font-size:13px;color:var(--muted);margin-bottom:6px}
+    .author-card .bio{font-size:14px;color:#2b3a3f}
+    .author-card .follow-btn{padding:6px 12px;font-weight:600;border:1px solid rgba(0,0,0,0.1);border-radius:999px;cursor:pointer;transition:background 160ms}
+
+    /* -------- TOP COMMENTS: prettier cards -------- */
+    .top-comments-section{margin-top:40px;padding:8px 0 20px 0}
+    .top-comments-header{display:flex;align-items:center;justify-content:space-between;padding:0 8px;margin-bottom:10px}
+    .top-comments-header h3{font-weight:700;font-size:18px;margin:0}
+    .top-comment-list{display:grid;gap:12px}
+    .top-comment-card{
+      display:flex;
+      flex-direction:row-reverse; /* avatar on the right for RTL */
+      gap:12px;
+      padding:12px;
+      border-radius:12px;
+      background:linear-gradient(180deg,#ffffff,#fbfbff);
+      border:1px solid rgba(16,24,40,0.04);
+      box-shadow:0 6px 18px rgba(13,17,23,0.03);
+      transition:transform var(--transition),box-shadow var(--transition);
+      align-items:flex-start;
+    }
+    .top-comment-card:hover{ transform:translateY(-6px); box-shadow:0 12px 28px rgba(13,17,23,0.06); }
+
+    .top-comment-avatar{
+      width:52px;height:52px;border-radius:999px;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:#fff;
+      background:linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+      font-size:18px;
+      border:2px solid rgba(255,255,255,0.06);
+    }
+
+    .top-comment-body{flex:1;min-width:0}
+    .top-comment-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .top-comment-meta .who{font-weight:700;color:var(--midnight)}
+    .top-comment-meta .date{font-size:13px;color:var(--muted);font-weight:400}
+    .top-comment-text{font-size:15px;color:#2b3a3f;margin-top:8px;line-height:1.7;overflow-wrap:break-word}
+    .top-comment-actions{margin-top:10px;display:flex;gap:8px}
+    .top-comment-action-btn{border:0;background:transparent;color:var(--muted);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:6px;border-radius:8px}
+    .top-comment-action-btn:hover{background:rgba(0,0,0,0.03);color:var(--midnight)}
+    .show-more-comments-btn{border:1px solid var(--accent);color:var(--accent);background:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+
+    /* remove the border and shadow around the main article panel as requested */
+    #articlePanel.panel{
+      border: none;
+      box-shadow: none;
+      background: transparent; /* leave the article content to render normally; panels below remain unchanged */
+      padding: 0; /* we'll let inner content control spacing */
+    }
+    /* Give article content its own subtle card so text is readable but not boxed by a border */
+    .article-card{
+      background:#fff;border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(13,17,23,0.03);
+    }
+
+    .more-from-author{margin-top:28px;padding:14px;border-radius:10px;background:#fff;border:1px solid rgba(16,24,40,0.03)}
+    .more-from-author .list{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+    .post-card{display:flex;gap:12px;align-items:flex-start;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.04);background:#fff;transition:transform var(--transition)}
+    .post-card:hover{transform:translateY(-6px)}
+    .post-card img{width:96px;height:64px;border-radius:6px;object-fit:cover;flex-shrink:0}
+    .post-card .t{font-weight:700}
+    .post-card .m{font-size:13px;color:var(--muted)}
+
+    .recommend-grid{margin-top:18px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+    .rec-card{display:flex;gap:12px;align-items:flex-start;padding:10px;border-radius:10px;border:1px solid rgba(16,24,40,0.04);background:#fff;transition:transform var(--transition)}
+    .rec-card:hover{transform:translateY(-6px)}
+    .rec-thumb{width:110px;height:72px;border-radius:8px;object-fit:cover;flex-shrink:0}
+    .rec-info{text-align:right}
+    .rec-title{font-weight:700;font-size:15px}
+    .rec-meta{font-size:13px;color:var(--muted)}
+
+    /* COMMENTS PANEL (left) - minimal fixes only */
+    .comments-panel{
+      position:fixed;
+      top:0;
+      left:0;                   /* <- left side */
+      width:min(420px,92vw);
+      height:100vh;
+      background:#fff;
+      z-index:1200; /* ensure above topbar */
+      box-shadow:8px 0 30px rgba(0,0,0,0.12);
+      transform:translateX(-110%); /* hidden by default off-screen to the left */
+      transition:transform var(--transition);
+      display:flex;flex-direction:column;direction:rtl;
+      will-change:transform;
+    }
+    .comments-panel.open{transform:translateX(0)}
+
+    .modal-overlay{
+      position:fixed;top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.18);
+      z-index:1150; /* below panel but above content */
+      opacity:0;visibility:hidden;transition:opacity var(--transition),visibility var(--transition);
+    }
+    .modal-overlay.visible{opacity:1;visibility:visible}
+
+    .comments-header{display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:1px solid #eee;flex-shrink:0}
+    .comments-content{flex-grow:1;overflow-y:auto;padding:14px;display:grid;gap:12px}
+    .comment-item{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);background:linear-gradient(180deg,#fff,#fbfbfb)}
+    .comment-meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--midnight);font-weight:600;margin-bottom:8px;justify-content:flex-end}
+    .comment-meta .date{font-weight:400;color:var(--muted);font-size:12px}
+    .comment-text{font-size:14px;line-height:1.6;color:#2b3a3f}
+
+    .comment-input-area{border-top:1px solid #eee;padding:14px;flex-shrink:0;display:flex;gap:10px;align-items:flex-end}
+    .comment-input-area textarea{width:100%;min-height:72px;padding:10px;border:1px solid #ddd;border-radius:10px;resize:vertical;font-family:inherit;font-size:14px;outline:none;transition:border-color 160ms}
+    .comment-input-area textarea:focus{border-color:var(--accent)}
+    .comment-submit-btn{background:var(--accent);color:#fff;border:0;padding:8px 15px;border-radius:999px;font-weight:600;cursor:pointer;transition:opacity 160ms}
+    .comment-submit-btn:hover{opacity:.95}
+    .comment-counter{font-size:12px;color:var(--muted);margin-top:6px;text-align:left}
+
+    @media (max-width:700px){
+      .hero{height:240px}
+      .page-inner{padding:0 12px}
+      .post-card img{width:84px;height:56px}
+      .comments-panel{width:100vw}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="toggleLeft" class="icon-circle" aria-label="باز/بستن فهرست" title="باز/بستن فهرست" aria-expanded="true">
+          <svg viewBox="0 0 18 12" width="18" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="18" height="2" rx="1" fill="#111827"/>
+            <rect y="5" width="18" height="2" rx="1" fill="#111827" opacity="0.7"/>
+            <rect y="10" width="18" height="2" rx="1" fill="#111827" opacity="0.5"/>
+          </svg>
+        </button>
+
+        <a href="explore.html" class="brand" style="padding-right:10px">نوت‌فورج</a>
+      </div>
+
+      <div class="search" aria-hidden="false">
+        <div class="box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="opacity:.6;margin-left:8px">
+            <path d="M21 21l-4.35-4.35" stroke="#111827" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="11" cy="11" r="6" stroke="#111827" stroke-width="1.6" opacity="0.6"/>
+          </svg>
+          <input id="searchInput" placeholder="جستجو در نوت‌فورج" aria-label="جستجو"/>
+        </div>
+      </div>
+
+      <div class="controls" style="gap:10px">
+        <button class="icon-circle" title="نوشتن" aria-label="نوشتن">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" fill="#111827"/><path d="M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#111827"/></svg>
+        </button>
+        <button class="icon-circle" title="اعلان‌ها" aria-label="اعلان‌ها">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22a2.5 2.5 0 0 0 2.45-2H9.55A2.5 2.5 0 0 0 12 22z" fill="#111827"/><path d="M18 16V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2z" fill="#111827" opacity="0.9"/></svg>
+        </button>
+        <div style="width:36px;height:36px;border-radius:999px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700">V</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-inner">
+      <div class="grid-wrap" id="grid">
+        <aside class="col-nav" aria-label="ناوبری">
+          <div class="panel sticky-panel" id="navPanel">
+            <nav class="nav-list" aria-label="ناوبری">
+              <a class="nav-item active" href="explore.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11.5L12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8.5z" fill="#111827"/></svg>خانه</a>
+              <a class="nav-item" href="#">کتابخانه</a>
+              <a class="nav-item" href="#">پروفایل</a>
+              <a class="nav-item" href="#">داستان‌ها</a>
+              <a class="nav-item" href="#">آمار</a>
+            </nav>
+
+            <hr class="my-4" style="border-color:rgba(0,0,0,0.06)"/>
+
+            <div class="following">
+              <h4 style="font-weight:700;margin-bottom:8px">افرادی که دنبال می‌کنید</h4>
+              <div class="person"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover" alt=""><div style="margin-left:8px"><div style="font-weight:600">ندا رضایی</div><div style="font-size:12px;color:var(--muted)">نویسنده</div></div></div>
+              <div class="person"><img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=200&auto=format&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover" alt=""><div style="margin-left:8px"><div style="font-weight:600">امیر موسوی</div><div style="font-size:12px;color:var(--muted)">نویسنده</div></div></div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="col-main">
+          <div class="article-wrap panel" id="articlePanel" aria-live="polite"></div>
+
+          <div class="article-wrap author-section">
+            <div class="author-card">
+              <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=387&auto=format&fit=crop" alt="لوگوی ویرگو">
+              <div class="details">
+                <div class="title">منتشر شده در The Virago</div>
+                <div class="meta">۲۱ هزار دنبال‌کننده • آخرین انتشار ۴ ساعت قبل</div>
+                <div class="bio">ما جامعه‌ای از زنانی هستیم که داستان‌های شخصی خود را در مورد اینکه چگونه زنده مانده و در زندگی خود رشد کرده‌ایم به اشتراک می‌گذاریم.</div>
+              </div>
+              <button class="follow-btn">دنبال کنید</button>
+            </div>
+
+            <div class="author-card">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop&crop=faces" alt="تصویر نویسنده" style="border-radius:999px">
+              <div class="details">
+                <div class="title">نوشته شده توسط متا مارولیا</div>
+                <div class="meta">۸.۹ هزار دنبال‌کننده • ۱.۵ هزار دنبال شونده</div>
+                <div class="bio">صدای من ابرقدرت من است. سردبیر ارشد The Virago.</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="follow-btn">دنبال کنید</button>
+                <button class="icon-circle" title="انعام دادن" aria-label="انعام به نویسنده" style="border:1px solid rgba(0,0,0,0.1);width:36px;height:36px"><i data-feather="heart" style="width:18px;height:18px"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="top-comments-section">
+            <div class="top-comments-header">
+              <h3 id="topCommentsTitle">دیدگاه‌های برتر (<span id="totalCommentsCount">0</span>)</h3>
+              <div><button class="show-more-comments-btn">دیدگاه‌های بیشتر</button></div>
+            </div>
+
+            <div id="topCommentsList">
+              <div style="text-align:center;color:var(--muted);padding-top:10px">در حال بارگذاری...</div>
+            </div>
+          </div>
+
+          <div class="article-wrap more-from-author panel" id="moreFromAuthor" style="display:none">
+            <h3 style="margin:0 0 10px 0;font-weight:700">پست‌های بیشتر از این نویسنده</h3>
+            <div id="moreFromAuthorList" class="list"></div>
+          </div>
+
+          <div class="article-wrap panel" id="recommendRoot" style="display:none;margin-top:18px">
+            <h3 style="margin:0 0 10px 0;font-weight:700">ممکن است دوست داشته باشید</h3>
+            <div id="recommendList" class="recommend-grid"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- overlay for comments panel -->
+  <div class="modal-overlay" id="commentOverlay" aria-hidden="true" role="presentation"></div>
+
+  <!-- COMMENTS PANEL (left) -->
+  <aside class="comments-panel" id="commentsPanel" aria-modal="true" role="dialog" aria-label="پنل دیدگاه‌ها">
+    <div class="comments-header">
+      <h3 style="font-weight:700;font-size:18px">تمام دیدگاه‌ها (<span id="panelCommentCount">0</span>)</h3>
+      <button class="icon-circle" id="closeComments" aria-label="بستن دیدگاه‌ها"><i data-feather="x" style="width:20px;height:20px"></i></button>
+    </div>
+
+    <div class="comments-content" id="panelCommentsContent">
+      <div style="text-align:center;color:var(--muted);padding-top:20px">
+        <i data-feather="loader" style="width:24px;height:24px;animation:spin 1s linear infinite;display:inline-block"></i>
+        <p style="margin-top:10px">در حال بارگذاری دیدگاه‌ها...</p>
+      </div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>
+
+    <div class="comment-input-area">
+      <div style="width:44px;flex-shrink:0;text-align:center">
+        <div style="width:44px;height:44px;border-radius:999px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700">V</div>
+      </div>
+      <div style="flex:1">
+        <textarea id="newCommentTextarea" placeholder="دیدگاه خود را بنویسید..."></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <div class="comment-counter" id="commentCounter">0 / 500</div>
+          <button class="comment-submit-btn" id="submitCommentBtn">ارسال دیدگاه</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    feather.replace();
+
+    // Mock content (same as before)
+    const LONG_BODY_TEXT = `## مقدمه: چطور خلاقیت‌تان را هر روز پرورش دهید.
+خلاقیت یک ماهیچه است که هر روز باید تمرین داده شود. این کار به معنای انجام یک شاهکار بزرگ هنری هر روز نیست، بلکه به معنای ایجاد فضایی برای ایده‌های جدید و اجازه دادن به ذهن برای پرسه زدن در مسیرهای ناشناخته است.
+
+### اولین قدم: روتین‌سازی
+برای شروع، یک روتین ایجاد کنید. ممکن است ۱۵ دقیقه نوشتن صبحگاهی باشد، یا یک ساعت طراحی اسکچ قبل از خواب. مهم این است که آن را **غیرقابل مذاکره** بدانید. درست مثل مسواک زدن یا ورزش کردن، تبدیل به یک بخش طبیعی از روزتان شود.
+
+> نکته: از کمال‌گرایی دوری کنید. هدف، کمیت است نه لزوماً کیفیت در مراحل اولیه. اجازه دهید ایده‌ها بدون فیلتر جاری شوند.
+
+### قدرت مشاهده
+نویسندگان بزرگ، مشاهده‌گران بزرگی هستند. به جزئیات توجه کنید. به نحوه انعکاس نور بر یک فنجان قهوه، یا الگوی صحبت کردن غریبه‌ها در کافه. همه چیز منبع الهام است. این مشاهدات را ثبت کنید. یک دفترچه یادداشت کوچک همیشه همراه داشته باشید.
+
+### تنوع ورودی
+ذهن شما خروجی‌ای می‌دهد که شما به آن ورودی داده‌اید. اگر همیشه یک نوع محتوا مصرف کنید، ایده‌هایتان تکراری می‌شوند.
+* **بخوانید:** نه فقط در زمینه کاری خودتان، بلکه شعر، تاریخ، فلسفه، یا حتی کتاب‌های علمی.
+* **ببینید:** فیلم‌های مستند، نمایش‌های هنری، یا طبیعت بکر.
+* **بشنوید:** موسیقی‌های جدید، پادکست‌هایی با موضوعات متنوع، یا حتی سکوت مطلق.
+
+### پذیرش شکست
+هیچ مسیر خلاقی بدون بن‌بست نیست. اولین پیش‌نویس‌ها بد هستند و این کاملاً طبیعی است. شکست یک قدم به سمت یادگیری است، نه یک حکم. به جای پنهان کردن کار خراب، از آن درس بگیرید. از خودتان بپرسید: "این کار چه چیزی به من یاد داد؟"
+
+---
+
+### ده راهکار برای تحریک خلاقیت
+
+1.  **نوشتن آزاد:** هر روز، به مدت ده دقیقه بدون توقف یا قضاوت، هر آنچه به ذهن می‌رسد بنویسید.
+2.  **پیاده‌روی خلاق:** بدون هدف خاصی قدم بزنید و تمرکز کنید تا چیزهای جدیدی در محیط آشنا ببینید.
+3.  **تغییر محیط:** اگر همیشه در یک جا کار می‌کنید، میز کارتان را عوض کنید، یا برای کار به کافه بروید.
+4.  **محدودیت‌ها:** برای خودتان محدودیت‌های مصنوعی ایجاد کنید (مثلاً: یک داستان بنویسید که در آن از کلمه "سبز" استفاده نشود). محدودیت‌ها، ذهن را به یافتن راه‌حل‌های جدید وادار می‌کنند.
+5.  **مدیتیشن:** پنج دقیقه سکوت مطلق در روز، برای آرام کردن نویز ذهنی و اجازه دادن به ایده‌ها برای شنیده شدن.
+6.  **خواب کافی:** ذهن شما در خواب کلاژهای عجیب و غریب و خلاقانه می‌سازد. از خواب غافل نشوید.
+7.  **سوالات "اگر چه می‌شد؟":** از این سوالات برای شروع یک ایده استفاده کنید. (مثلاً: اگر جاذبه زمین برعکس می‌شد، چه؟)
+8.  **استفاده از دست‌ها:** کارهای فیزیکی (مثل آشپزی، باغبانی، یا لگو بازی) می‌تواند ذهن را برای ایده‌پردازی آماده کند.
+9.  **پروژه‌های جانبی:** همیشه یک پروژه کوچک و سرگرم‌کننده در کنار کار اصلی داشته باشید.
+10. **به اشتراک‌گذاری:** کارتان را با دیگران به اشتراک بگذارید تا بازخورد بگیرید و دیدگاه‌های جدیدی پیدا کنید.
+
+### جمع‌بندی
+نوشتن خلاقانه، یک ماراتن است نه دوی سرعت. با مداومت و صبر، و با استفاده از این تکنیک‌ها، شما می‌توانید منبع خلاقیت درون خود را تقویت کنید. به این فرآیند اعتماد کنید، حتی اگر نتایج بلافاصله قابل مشاهده نباشند.
+---
+پایان متن.
+`;
+
+    const STORIES = [
+      { id:'s1', pub:'در زمان کوتاه', author:'متا مارولیا', author_img:'https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?q=80&w=60&auto=format&fit=crop&crop=faces', read_time:'۹ دقیقه مطالعه', title:'چالش نوشتن: نامه نوامبر', excerpt:'چطور خلاقیت‌تان را هر روز پرورش دهید.', body:LONG_BODY_TEXT, thumb:'https://images.unsplash.com/photo-1529251333259-d36cccaf22ea?q=80&w=1600&auto=format&fit=crop', time:'۲ روز قبل', likes:1000, responses:13, saved:false, liked:false },
+      { id:'s2', pub:'دنیای نوشتن', author:'امیت گوپتا', author_img:'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=60&auto=format&fit=crop&crop=faces', read_time:'۷ دقیقه مطالعه', title:'۱۴ نشانه که شما به نویسنده‌ای برجسته تبدیل می‌شوید', excerpt:'نکاتی که ممکن است متوجهشان نباشید اما در حال رخ دادن‌اند.', body:'متن کامل...', thumb:'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1600&auto=format&fit=crop', time:'۱۶ اکتبر', likes:1300, responses:39, saved:false, liked:false },
+      { id:'s3', pub:'قسمت‌های انسانی', author:'بنژامین اسلج', author_img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=60&auto=format&fit=crop&crop=faces', read_time:'۱۵ دقیقه مطالعه', title:'۲۰ سال از حمله به عراق گذشت؛ هنوز در بیابانم', excerpt:'خاطراتی شخصی از آن دوره سخت.', body:'خاطرات کامل...', thumb:'https://images.unsplash.com/photo-1500252185289-40ca85eb23a7?q=80&w=1600&auto=format&fit=crop', time:'۲۰ مارس ۲۰۲۳', likes:2100, responses:88, saved:false, liked:false },
+      { id:'s4', pub:'هنر نوشتن', author:'متا مارولیا', author_img:'https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?q=80&w=60&auto=format&fit=crop&crop=faces', read_time:'۶ دقیقه مطالعه', title:'چطور یک روتین نویسندگی بسازیم', excerpt:'روتین‌هایی که واقعا کار می‌کنند.', body:'متن کامل...', thumb:'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=1600&auto=format&fit=crop', time:'۵ روز قبل', likes:420, responses:7, saved:false, liked:false },
+    ];
+
+    let FAKE_COMMENTS = [
+      { name:"علی اکبری", date:"۱۰ دقیقه قبل", text:'ممنون از مقاله عالی و الهام‌بخش‌تان. واقعا نکته "قدرت مشاهده" را فراموش کرده بودم.' },
+      { name:"سارا حسینی", date:"۲ ساعت قبل", text:'بخش "پذیرش شکست" بسیار واقعی و مورد نیاز است. بیشتر اوقات ما خودمان بزرگترین منتقد هستیم.' },
+      { name:"رضا کمالی", date:"۱ day قبل", text:'ایده "محدودیت‌های مصنوعی" برای من بسیار جالب بود. حتماً آن را امتحان خواهم کرد.' },
+      { name:"پروانه ناصری", date:"۲ روز قبل", text:"روتین‌سازی، کلید اصلی است. تا زمانی که تبدیل به عادت نشود، به راحتی رها می‌شود." },
+      { name:"حمید لطفی", date:"۴ روز قبل", text:"بهترین راهکار برای من پیاده‌روی خلاقانه بود. طبیعت واقعا الهام‌بخش است." },
+      { name:"فاطمه احمدی", date:"۴ روز قبل", text:"من کاملاً موافقم. خلاقیت با تمرین روزانه رشد می‌کند." },
+      { name:"نوید جعفری", date:"۵ روز قبل", text:"یک نکته عالی دیگر: گوش دادن به موسیقی کلاسیک حین کار می‌تواند تمرکز را افزایش دهد." },
+    ];
+
+    function esc(s){ return String(s||''); }
+    function formatCount(n){ if(n>=1_000_000) return (n/1_000_000).toFixed(1).replace(/\.0$/,'')+'M'; if(n>=1_000) return (n/1_000).toFixed(1).replace(/\.0$/,'')+'K'; return String(n); }
+    function q(name){ try{ return new URL(location.href).searchParams.get(name); } catch(e){ return null; } }
+
+    function renderActions(item, position){
+      const container = document.createElement('div');
+      container.className = position === 'top' ? 'actions-top' : 'actions-bottom';
+      container.innerHTML = `
+        <div class="actions-left">
+          <button class="btn" id="likeBtn-${position}"><i data-feather="heart"></i> ${formatCount(item.likes)}</button>
+          <button class="btn commentBtn"><i data-feather="message-circle"></i> ${item.responses}</button>
+        </div>
+        <div class="actions-right">
+          <a href="./issue.html" class="btn issueBtn"><i data-feather="alert-circle"></i> گزارش</a>
+          <button class="btn" id="saveBtn-${position}"></button>
+          <button class="btn" id="shareBtn-${position}"><i data-feather="share-2"></i> اشتراک</button>
+          <a href="options.html?id=${item.id}" class="btn moreBtn"><i data-feather="more-vertical"></i></a>
+        </div>
+      `;
+      return container;
+    }
+
+    function attachListeners(item, position){
+      const likeBtn = document.getElementById(`likeBtn-${position}`);
+      const saveBtn = document.getElementById(`saveBtn-${position}`);
+      const shareBtn = document.getElementById(`shareBtn-${position}`);
+      const otherPosition = position === 'top' ? 'bottom' : 'top';
+      const otherLikeBtn = document.getElementById(`likeBtn-${otherPosition}`);
+      const otherSaveBtn = document.getElementById(`saveBtn-${otherPosition}`);
+      const updateButtons = () => {
+        [likeBtn, otherLikeBtn].forEach(btn=>{ if(btn){ btn.innerHTML = `<i data-feather="heart"></i> ${formatCount(item.likes)}`; btn.classList.toggle('liked', item.liked); }});
+        [saveBtn, otherSaveBtn].forEach(btn=>{ if(btn){ btn.innerHTML = item.saved ? `<i data-feather="bookmark"></i> ذخیره‌شده` : `<i data-feather="bookmark"></i> ذخیره`; btn.classList.toggle('saved', item.saved); }});
+        feather.replace();
+      };
+      if(likeBtn) likeBtn.addEventListener('click', ()=>{ item.liked = !item.liked; item.liked ? item.likes++ : item.likes = Math.max(0,item.likes-1); updateButtons(); });
+      if(saveBtn) saveBtn.addEventListener('click', ()=>{ item.saved = !item.saved; updateButtons(); });
+      if(shareBtn) shareBtn.addEventListener('click', async ()=>{ const url = location.href; if(navigator.share){ try{ await navigator.share({title:item.title,text:item.excerpt,url}); }catch(e){} } else { try{ await navigator.clipboard.writeText(url); const prev = shareBtn.innerHTML; shareBtn.innerHTML = `<i data-feather="check"></i> کپی شد`; feather.replace(); setTimeout(()=>{ shareBtn.innerHTML = prev; feather.replace(); },1100); }catch(e){ alert('کپی نشد'); } } });
+      updateButtons();
+    }
+
+    // prettier top comments rendering (defensive)
+    function renderTopComments(comments, totalCount){
+      const container = document.getElementById('topCommentsList');
+      const countElement = document.getElementById('totalCommentsCount');
+      if(!container || !countElement) return;
+      countElement.textContent = totalCount;
+      const commentsToShow = comments.slice(0,3);
+      if(comments.length === 0){
+        container.innerHTML = `<p style="text-align:center;color:var(--muted);padding-top:20px;">هنوز دیدگاهی ثبت نشده است.</p>`;
+        const gm = document.querySelector('.show-more-comments-btn'); if(gm) gm.style.display='none';
+        return;
+      }
+
+      container.innerHTML = `<div class="top-comment-list">` + commentsToShow.map(c=>`
+        <div class="top-comment-card">
+          <div class="top-comment-avatar">${esc(c.name).charAt(0)}</div>
+          <div class="top-comment-body">
+            <div class="top-comment-meta">
+              <div class="who">${esc(c.name)}</div>
+              <div class="date">${esc(c.date)}</div>
+            </div>
+            <div class="top-comment-text">${esc(c.text)}</div>
+            <div class="top-comment-actions">
+              <button class="top-comment-action-btn like-top-comment"><i data-feather="heart"></i> پسند</button>
+              <button class="top-comment-action-btn reply-top-comment"><i data-feather="corner-up-right"></i> پاسخ</button>
+            </div>
+          </div>
+        </div>
+      `).join('') + `</div>`;
+
+      const moreBtn = document.querySelector('.show-more-comments-btn');
+      if(moreBtn){
+        if(comments.length > 3){
+          moreBtn.style.display='inline-flex';
+          moreBtn.textContent = `نمایش ${comments.length - 3} دیدگاه دیگر`;
+        } else {
+          moreBtn.style.display='none';
+        }
+      }
+
+      feather.replace();
+
+      // attach interactions
+      container.querySelectorAll('.like-top-comment').forEach(btn=>{ btn.addEventListener('click', ()=>{ btn.classList.toggle('liked'); btn.style.color = btn.classList.contains('liked') ? '#ef4444' : ''; }); });
+      container.querySelectorAll('.reply-top-comment').forEach((btn, idx)=>{ btn.addEventListener('click', ()=>{ openCommentPanel(); const ta = document.getElementById('newCommentTextarea'); if(ta) { ta.value = `@${commentsToShow[idx].name} `; ta.focus(); } }); });
+    }
+
+    function renderPanelComments(comments,totalCount){
+      const container = document.getElementById('panelCommentsContent');
+      const countElement = document.getElementById('panelCommentCount');
+      if(!container||!countElement) return;
+      countElement.textContent = totalCount;
+      if(comments.length===0){ container.innerHTML = `<p style="text-align:center;color:var(--muted);padding-top:20px;">هنوز دیدگاهی ثبت نشده است.</p>`; return; }
+      container.innerHTML = comments.map(c=>`
+        <div class="comment-item">
+          <div class="comment-meta">
+            <div style="width:32px;height:32px;border-radius:999px;background:#eee;display:inline-flex;align-items:center;justify-content:center;font-size:12px;">${c.name.charAt(0)}</div>
+            <div>${esc(c.name)}</div>
+            <div class="date">• ${esc(c.date)}</div>
+          </div>
+          <div class="comment-text">${esc(c.text)}</div>
+        </div>
+      `).join('');
+      feather.replace();
+    }
+
+    function setupCommentPanel(initialResponsesCount){
+      const commentBtns = document.querySelectorAll('.commentBtn');
+      const commentsPanel = document.getElementById('commentsPanel');
+      const closeBtn = document.getElementById('closeComments');
+      const overlay = document.getElementById('commentOverlay');
+      const submitBtn = document.getElementById('submitCommentBtn');
+      const textarea = document.getElementById('newCommentTextarea');
+      const moreCommentsBtn = document.querySelector('.show-more-comments-btn');
+      const counter = document.getElementById('commentCounter');
+
+      let currentResponsesCount = initialResponsesCount;
+
+      const openPanel = ()=>{
+        if(!commentsPanel || !overlay) return;
+        commentsPanel.classList.add('open');
+        overlay.classList.add('visible');
+        // lock body scroll
+        document.body.style.overflow = 'hidden';
+        // set aria-hidden states
+        overlay.setAttribute('aria-hidden','false');
+        commentsPanel.setAttribute('aria-hidden','false');
+        renderPanelComments(FAKE_COMMENTS, currentResponsesCount);
+        setTimeout(()=>{ if(textarea) textarea.focus(); }, 220);
+      };
+      const closePanel = ()=>{ if(!commentsPanel || !overlay) return; commentsPanel.classList.remove('open'); overlay.classList.remove('visible'); document.body.style.overflow = ''; overlay.setAttribute('aria-hidden','true'); commentsPanel.setAttribute('aria-hidden','true'); };
+
+      const handleSubmit = ()=>{
+        const commentText = textarea ? textarea.value.trim() : '';
+        if(commentText){
+          FAKE_COMMENTS.unshift({ name: 'شما', date: 'همین الان', text: commentText });
+          currentResponsesCount++;
+          renderTopComments(FAKE_COMMENTS, currentResponsesCount);
+          renderPanelComments(FAKE_COMMENTS, currentResponsesCount);
+          if(textarea) textarea.value = '';
+          if(counter) counter.textContent = '0 / 500';
+          const panelContent = document.getElementById('panelCommentsContent'); if(panelContent) panelContent.scrollTop = 0;
+        } else alert('لطفاً دیدگاه خود را وارد کنید.');
+      };
+
+      if(commentBtns && commentBtns.length) commentBtns.forEach(btn=>btn.addEventListener('click', openPanel));
+      if(moreCommentsBtn) moreCommentsBtn.addEventListener('click', openPanel);
+      if(closeBtn) closeBtn.addEventListener('click', closePanel);
+      if(overlay) overlay.addEventListener('click', closePanel);
+      if(submitBtn) submitBtn.addEventListener('click', handleSubmit);
+
+      if(textarea) textarea.addEventListener('input', ()=>{ const len = textarea.value.length; if(counter) { counter.textContent = `${len} / 500`; counter.style.color = len>500 ? '#ef4444' : 'var(--muted)'; }});
+      document.addEventListener('keydown', (e)=>{ const panel = document.getElementById('commentsPanel'); if(e.key==='Escape' && panel && panel.classList.contains('open')) closePanel(); });
+
+      renderTopComments(FAKE_COMMENTS, initialResponsesCount);
+    }
+
+    function renderMoreFromAuthor(currentAuthor, currentId){
+      const wrapper = document.getElementById('moreFromAuthor');
+      const list = document.getElementById('moreFromAuthorList');
+      const items = STORIES.filter(s => s.author === currentAuthor && s.id !== currentId);
+      if(!items || items.length===0){ wrapper.style.display='none'; return; }
+      wrapper.style.display='block';
+      list.innerHTML = items.slice(0,6).map(s=>`
+        <a class="post-card" href="?id=${s.id}">
+          <img src="${esc(s.thumb)}" alt="${esc(s.title)}">
+          <div>
+            <div class="t">${esc(s.title)}</div>
+            <div class="m">${esc(s.read_time)} • ${esc(s.time)}</div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    function renderRecommendations(currentId){
+      const root = document.getElementById('recommendList');
+      const wrapper = document.getElementById('recommendRoot');
+      const items = STORIES.filter(s => s.id !== currentId);
+      if(!items || items.length===0){ wrapper.style.display='none'; return; }
+      wrapper.style.display='block';
+      root.innerHTML = items.slice(0,4).map(s=>`
+        <a class="rec-card" href="?id=${s.id}">
+          <img class="rec-thumb" src="${esc(s.thumb)}" alt="${esc(s.title)}">
+          <div class="rec-info">
+            <div class="rec-title">${esc(s.title)}</div>
+            <div class="rec-meta">${esc(s.pub)} • ${esc(s.read_time)}</div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    (function initArticle(){
+      const articlePanel = document.getElementById('articlePanel');
+      const id = q('id') || 's1';
+      const item = STORIES.find(s=>s.id===id);
+      if(!item){
+        articlePanel.innerHTML = `<div class="panel" style="text-align:center"><h2 style="margin:0 0 8px 0">مقاله یافت نشد</h2><p style="color:var(--muted)">مقاله‌ای با این شناسه وجود ندارد.</p><div style="margin-top:12px"><a class="btn" href="explore.html">بازگشت به اکسپلور</a></div></div>`;
+        return;
+      }
+
+      articlePanel.innerHTML = `
+        <div class="article-card" role="article">
+          <div class="meta">در ${esc(item.pub)} • ${esc(item.time)}</div>
+          <h1 class="title">${esc(item.title)}</h1>
+          <div class="author-info">
+            <img src="${esc(item.author_img)}" alt="${esc(item.author)}">
+            <div class="details">
+              <div class="author-name">${esc(item.author)}</div>
+              <div class="date">${esc(item.read_time)}</div>
+            </div>
+          </div>
+
+          ${renderActions(item,'top').outerHTML}
+          <div class="hero"><img src="${esc(item.thumb)}" alt="${esc(item.title)}"></div>
+
+          <div class="content" id="articleContent" tabindex="0" aria-label="${esc(item.title)}"></div>
+
+          ${renderActions(item,'bottom').outerHTML}
+        </div>
+      `;
+
+      const cont = document.getElementById('articleContent');
+      const htmlContent = item.body.split("\n\n").map(block=>{
+        if(block.startsWith("##")) return `<h2>${block.substring(2).trim()}</h2>`;
+        else if(block.startsWith(">")) return `<blockquote>${block.substring(1).trim().replace(/\n/g,'<br>')}</blockquote>`;
+        else if(block.includes("---")) return `<hr style="margin:24px 0;border-color:rgba(0,0,0,0.06);"/>`;
+        else if(block.trim()==='') return '';
+        else return `<p>${block.replace(/\n/g,'<br>')}</p>`;
+      }).join('');
+      cont.innerHTML = htmlContent;
+
+      attachListeners(item,'top');
+      attachListeners(item,'bottom');
+
+      setupCommentPanel(item.responses);
+      renderMoreFromAuthor(item.author,item.id);
+      renderRecommendations(item.id);
+    })();
+
+    // toggle left (keep original semantics)
+    document.getElementById('toggleLeft')?.addEventListener('click', ()=>{
+      const hidden = document.body.classList.toggle('hide-left');
+      document.getElementById('toggleLeft').setAttribute('aria-expanded', String(!hidden));
+    });
+
+    // open comment panel helper used by reply buttons
+    function openCommentPanel(){
+      const panel = document.getElementById('commentsPanel');
+      const overlay = document.getElementById('commentOverlay');
+      const textarea = document.getElementById('newCommentTextarea');
+      if(!panel || !overlay) return;
+      panel.classList.add('open');
+      overlay.classList.add('visible');
+      document.body.style.overflow = 'hidden';
+      overlay.setAttribute('aria-hidden','false');
+      panel.setAttribute('aria-hidden','false');
+      renderPanelComments(FAKE_COMMENTS, FAKE_COMMENTS.length);
+      setTimeout(()=>{ if(textarea) textarea.focus(); }, 220);
+      feather.replace();
+    }
+
+    // close button behavior
+    document.getElementById('closeComments')?.addEventListener('click', ()=>{
+      const panel = document.getElementById('commentsPanel');
+      const overlay = document.getElementById('commentOverlay');
+      if(panel) panel.classList.remove('open');
+      if(overlay) overlay.classList.remove('visible');
+      document.body.style.overflow = '';
+      if(overlay) overlay.setAttribute('aria-hidden','true');
+      if(panel) panel.setAttribute('aria-hidden','true');
+    });
+    document.getElementById('commentOverlay')?.addEventListener('click', ()=>{
+      const panel = document.getElementById('commentsPanel');
+      const overlay = document.getElementById('commentOverlay');
+      if(panel) panel.classList.remove('open');
+      if(overlay) overlay.classList.remove('visible');
+      document.body.style.overflow = '';
+      if(overlay) overlay.setAttribute('aria-hidden','true');
+      if(panel) panel.setAttribute('aria-hidden','true');
+    });
+
+  </script>
+</body>
+</html>

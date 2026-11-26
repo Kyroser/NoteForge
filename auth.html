@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>نوت‌فورج — ورود / ثبت‌نام</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              vazir: ["Vazirmatn", "system-ui", "sans-serif"],
+            },
+            colors: {
+              parchment: "#F5F1E9",
+              slate: "#6B7A8F",
+              clay: "#DCC7BE",
+              sage: "#86B3A2",
+              midnight: "#1A2930",
+              warm: "#7a5c48",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      :root {
+        --bg: #f5f1e9;
+        --muted: #6b7a8f;
+        --clay: #dcc7be;
+        --sage: #86b3a2;
+        --accent: #7c3aed;
+        --midnight: #1a2930;
+        --card-radius: 20px;
+        --glass-bg: rgba(255, 255, 255, 0.06);
+        --glass-border: rgba(255, 255, 255, 0.1);
+      }
+
+      body {
+        font-family: "Vazirmatn", system-ui, sans-serif;
+        background-color: var(--bg);
+        color: var(--midnight);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .bg-fixed {
+        position: fixed;
+        inset: 0;
+        background-image: url("./background.jpg");
+        background-size: cover;
+        background-position: center;
+        filter: saturate(0.95) contrast(0.98);
+        z-index: -30;
+        animation: zoomBG 40s ease-in-out infinite alternate;
+        will-change: transform;
+      }
+      @keyframes zoomBG {
+        from {
+          transform: scale(1);
+        }
+        to {
+          transform: scale(1.08);
+        }
+      }
+
+      .bg-overlay {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(134, 179, 162, 0.04) 0%,
+          rgba(122, 92, 72, 0.06) 70%
+        );
+        z-index: -20;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 56px 20px;
+      }
+
+      .auth-card {
+        width: 100%;
+        max-width: 880px;
+        border-radius: var(--card-radius);
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(11, 15, 18, 0.12);
+        transition: transform 360ms cubic-bezier(0.2, 0.9, 0.2, 1);
+      }
+
+      @media (min-width: 992px) {
+        .auth-card {
+          grid-template-columns: 420px 1fr;
+        }
+      }
+
+      .auth-side {
+        background: linear-gradient(135deg, #86b3a2 0%, #7a5c48 100%);
+        position: relative;
+        min-height: 420px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+        border-radius: var(--card-radius) 0 0 var(--card-radius);
+        overflow: hidden;
+      }
+      .auth-side::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(6px) saturate(120%);
+      }
+      .auth-side-inner {
+        position: relative;
+        z-index: 2;
+        color: white;
+        text-align: center;
+        padding: 12px 18px;
+        border-radius: 14px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.03),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(3px) saturate(120%);
+      }
+      .auth-side h3 {
+        font-weight: 700;
+        font-size: 20px;
+        margin-bottom: 6px;
+      }
+      .auth-side p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        margin: 0;
+      }
+
+      .auth-form {
+        background: linear-gradient(180deg, #ffffff, #fbfbfb);
+        padding: 38px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        justify-content: center;
+        color: var(--midnight);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 6px;
+      }
+      .tab {
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-weight: 700;
+        color: var(--midnight);
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 180ms;
+        background: transparent;
+      }
+      .tab.active {
+        border-color: rgba(26, 41, 48, 0.06);
+        background: rgba(0, 0, 0, 0.02);
+        color: var(--midnight);
+      }
+
+      .form-title {
+        text-align: center;
+        color: var(--midnight);
+        font-weight: 800;
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+
+      .fields {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+      }
+      .field {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid rgba(26, 41, 48, 0.06);
+        padding: 6px 2px;
+      }
+      .field input {
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--midnight);
+        padding: 8px 4px;
+        width: 100%;
+        text-align: right;
+      }
+      .field .icon {
+        color: var(--muted);
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .agree {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--midnight);
+        font-size: 13px;
+      }
+
+      .btn-primary {
+        border-radius: 999px;
+        padding: 12px 16px;
+        font-weight: 800;
+        background: linear-gradient(180deg, var(--sage), #6ea890);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: transform 160ms, box-shadow 160ms;
+        box-shadow: 0 10px 30px rgba(102, 120, 102, 0.12);
+        width: 100%;
+      }
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 38px rgba(102, 120, 102, 0.16);
+      }
+
+      .btn-ghost {
+        border-radius: 999px;
+        padding: 10px 12px;
+        border: 1px solid rgba(26, 41, 48, 0.06);
+        background: transparent;
+        color: var(--midnight);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+
+      .foot-note {
+        text-align: center;
+        color: rgba(26, 41, 48, 0.7);
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      @media (max-width: 640px) {
+        .auth-side {
+          display: none;
+        }
+        .auth-card {
+          max-width: 420px;
+        }
+        .auth-form {
+          padding: 24px;
+        }
+        .panel {
+          padding: 18px;
+        }
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 560ms var(--transition),
+          transform 560ms var(--transition);
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: none;
+      }
+
+      .error {
+        color: #8b1c1c;
+        background: rgba(255, 60, 60, 0.06);
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        display: none;
+      }
+
+      .bottom-spacer {
+        height: 48px;
+        background: linear-gradient(
+          180deg,
+          rgba(122, 92, 72, 0),
+          rgba(122, 92, 72, 0.06)
+        );
+        margin-top: 18px;
+        border-bottom-left-radius: var(--card-radius);
+        border-bottom-right-radius: var(--card-radius);
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+    <div
+      class="bg-fixed"
+      id="bgFixed"
+      aria-hidden="true"
+      style="background-image: url('./background.jpg')"
+    ></div>
+    <div class="bg-overlay" aria-hidden="true"></div>
+
+    <main class="page">
+      <div
+        class="auth-card reveal"
+        id="authCard"
+        role="region"
+        aria-label="فرم ورود و ثبت نام"
+      >
+        <div class="auth-side" aria-hidden="true">
+          <div class="auth-side-inner">
+            <h3>نوت‌فورج</h3>
+            <p>پلتفرم نویسندگی گروهی — ایده‌ها را با هم بسازید</p>
+          </div>
+        </div>
+
+        <div class="auth-form">
+          <div class="tabs" role="tablist" aria-label="انتخاب فرم">
+            <button
+              class="tab active"
+              id="tab-signup"
+              role="tab"
+              aria-selected="true"
+            >
+              ثبت نام
+            </button>
+            <button class="tab" id="tab-login" role="tab" aria-selected="false">
+              ورود
+            </button>
+          </div>
+
+          <div class="form-title" id="formTitle">ثبت نام</div>
+
+          <div class="error" id="errorBox" role="alert"></div>
+
+          <!-- Forms container -->
+          <div id="forms">
+            <!-- Signup -->
+            <form
+              id="signupForm"
+              class="reveal visible"
+              autocomplete="on"
+              novalidate
+            >
+              <div class="fields">
+                <label class="sr-only" for="su_name">نام</label>
+                <div class="field">
+                  <input
+                    id="su_name"
+                    name="name"
+                    type="text"
+                    placeholder="نام کامل"
+                    aria-label="نام"
+                    required
+                  />
+                  <div class="icon" aria-hidden="true">
+                    <i data-feather="user"></i>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <input
+                    id="su_email"
+                    name="email"
+                    type="email"
+                    placeholder="ایمیل"
+                    aria-label="ایمیل"
+                    required
+                  />
+                  <div class="icon" aria-hidden="true">
+                    <i data-feather="mail"></i>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <input
+                    id="su_password"
+                    name="password"
+                    type="password"
+                    placeholder="رمزعبور"
+                    aria-label="رمزعبور"
+                    required
+                  />
+                  <div class="icon" aria-hidden="true">
+                    <i data-feather="lock"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="agree">
+                <input id="su_agree" type="checkbox" />
+                <label for="su_agree"
+                  >مشاهده قوانین و مقررات و توافق با آنها</label
+                >
+              </div>
+
+              <button type="button" class="btn-primary" id="signupBtn">
+                ثبت نام
+              </button>
+
+              <div class="foot-note">
+                حساب دارید؟
+                <button type="button" class="link" id="gotoLogin">
+                  وارد شوید
+                </button>
+              </div>
+            </form>
+
+            <!-- Login -->
+            <form
+              id="loginForm"
+              class="reveal"
+              autocomplete="on"
+              novalidate
+              style="display: none"
+            >
+              <div class="fields">
+                <div class="field">
+                  <input
+                    id="li_email"
+                    name="email"
+                    type="email"
+                    placeholder="ایمیل"
+                    aria-label="ایمیل"
+                    required
+                  />
+                  <div class="icon" aria-hidden="true">
+                    <i data-feather="mail"></i>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <input
+                    id="li_password"
+                    name="password"
+                    type="password"
+                    placeholder="رمزعبور"
+                    aria-label="رمزعبور"
+                    required
+                  />
+                  <div class="icon" aria-hidden="true">
+                    <i data-feather="lock"></i>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="btn-ghost"
+                id="googleBtn"
+                aria-label="ورود با گوگل"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M21.6 12.227A9.76 9.76 0 0 0 12 2.25c-5.385 0-9.75 4.365-9.75 9.75 0 5.385 4.365 9.75 9.75 9.75 4.763 0 8.76-3.38 9.55-7.86"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                ورود با گوگل
+              </button>
+
+              <button type="button" class="btn-primary" id="loginBtn">
+                ورود
+              </button>
+
+              <div class="foot-note">
+                حساب ندارید؟
+                <button type="button" class="link" id="gotoSignup">
+                  ثبت نام
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="bottom-spacer" aria-hidden="true"></div>
+
+    <script>
+      feather.replace();
+
+      // Elements
+      const authCard = document.getElementById("authCard");
+      const tabSignup = document.getElementById("tab-signup");
+      const tabLogin = document.getElementById("tab-login");
+      const signupForm = document.getElementById("signupForm");
+      const loginForm = document.getElementById("loginForm");
+      const formTitle = document.getElementById("formTitle");
+      const gotoLogin = document.getElementById("gotoLogin");
+      const gotoSignup = document.getElementById("gotoSignup");
+      const signupBtn = document.getElementById("signupBtn");
+      const loginBtn = document.getElementById("loginBtn");
+      const googleBtn = document.getElementById("googleBtn");
+      const errorBox = document.getElementById("errorBox");
+      const bgFixed = document.getElementById("bgFixed");
+
+      (function checkBackground() {
+        const img = new Image();
+        img.onload = function () {
+          /* local image found; already used in CSS */
+        };
+        img.onerror = function () {
+          bgFixed.style.backgroundImage =
+            "url('https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=1600&auto=format&fit=crop')";
+        };
+        img.src = "./background.jpg";
+      })();
+
+      window.addEventListener("load", () => {
+        requestAnimationFrame(() => {
+          document.querySelectorAll(".reveal").forEach((el, idx) => {
+            setTimeout(() => el.classList.add("visible"), 120 + idx * 80);
+          });
+        });
+      });
+
+      function showSignup() {
+        tabSignup.classList.add("active");
+        tabLogin.classList.remove("active");
+        formTitle.textContent = "ثبت نام";
+        loginForm.style.display = "none";
+        loginForm.classList.remove("visible");
+        signupForm.style.display = "block";
+        setTimeout(() => signupForm.classList.add("visible"), 10);
+        location.hash = "#signup";
+      }
+      function showLogin() {
+        tabLogin.classList.add("active");
+        tabSignup.classList.remove("active");
+        formTitle.textContent = "ورود";
+        signupForm.style.display = "none";
+        signupForm.classList.remove("visible");
+        loginForm.style.display = "block";
+        setTimeout(() => loginForm.classList.add("visible"), 10);
+        location.hash = "#login";
+      }
+
+      tabSignup.addEventListener("click", showSignup);
+      tabLogin.addEventListener("click", showLogin);
+      gotoLogin && gotoLogin.addEventListener("click", showLogin);
+      gotoSignup && gotoSignup.addEventListener("click", showSignup);
+
+      function setError(msg) {
+        errorBox.style.display = "block";
+        errorBox.textContent = msg;
+        setTimeout(() => {
+          errorBox.style.display = "none";
+          errorBox.textContent = "";
+        }, 3000);
+      }
+
+      signupBtn.addEventListener("click", () => {
+        const name = document.getElementById("su_name").value.trim();
+        const email = document.getElementById("su_email").value.trim();
+        const pw = document.getElementById("su_password").value;
+        const agree = document.getElementById("su_agree").checked;
+        if (!name || !email || !pw) {
+          setError("لطفاً همهٔ فیلدها را کامل کنید");
+          authShake();
+          return;
+        }
+        if (!agree) {
+          setError("برای ثبت نام باید با قوانین موافق باشید");
+          return;
+        }
+        toast("ثبت نام با موفقیت انجام شد — خوش آمدید، " + name + "!");
+        setTimeout(() => showLogin(), 900);
+      });
+
+      loginBtn.addEventListener("click", () => {
+        const email = document.getElementById("li_email").value.trim();
+        const pw = document.getElementById("li_password").value;
+        if (!email || !pw) {
+          setError("ایمیل و رمزعبور را وارد کنید");
+          authShake();
+          return;
+        }
+        toast("ورود موفق — خوش آمدید!");
+      });
+
+      googleBtn.addEventListener("click", () => {
+        toast("ورود با گوگل (نمونه)");
+      });
+
+      function authShake() {
+        authCard.animate(
+          [
+            { transform: "translateY(0)" },
+            { transform: "translateX(-8px)" },
+            { transform: "translateX(8px)" },
+            { transform: "translateY(0)" },
+          ],
+          { duration: 420 }
+        );
+      }
+
+      function toast(msg, timeout = 2200) {
+        const t = document.createElement("div");
+        t.className =
+          "fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-md text-white font-bold";
+        t.style.background = "rgba(0,0,0,0.7)";
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => (t.style.opacity = "0"), timeout);
+        setTimeout(() => t.remove(), timeout + 300);
+      }
+
+      document
+        .getElementById("su_password")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter") signupBtn.click();
+        });
+      document
+        .getElementById("li_password")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter") loginBtn.click();
+        });
+
+      (function initFromHash() {
+        const h = location.hash.replace("#", "");
+        if (h === "login") showLogin();
+        else showSignup();
+      })();
+
+      const mo = new MutationObserver(() => feather.replace());
+      mo.observe(document.body, { childList: true, subtree: true });
+    </script>
+  </body>
+</html>

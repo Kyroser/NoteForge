@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>نوشتن — نوت‌فورج</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --text: #1a2930;
+        --muted: #9ca3af;
+        --green: #34a853;
+        --accent: #7c3aed;
+        --bg: #fff;
+        --bg-dark: #1e1e2f;
+        --text-dark: #f5f5f5;
+        --muted-dark: #aaa;
+      }
+
+      /* BODY */
+      html,
+      body {
+        margin: 0;
+        font-family: "Vazirmatn", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        transition: 0.3s;
+      }
+      body.dark {
+        background: var(--bg-dark);
+        color: var(--text-dark);
+      }
+
+      /* HEADER */
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        z-index: 50;
+        transition: 0.3s;
+      }
+      body.dark .header {
+        background: var(--bg-dark);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+      .header-inner {
+        max-width: 1400px;
+        margin: auto;
+        padding: 10px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand {
+        font-weight: 800;
+        font-size: 20px;
+      }
+      .draft {
+        color: #6b7280;
+        font-size: 14px;
+      }
+      body.dark .draft {
+        color: var(--muted-dark);
+      }
+      .publish {
+        background: #e6f4ea;
+        color: #1e7f43;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+        border: 0;
+        cursor: pointer;
+      }
+      body.dark .publish {
+        background: #3b3b5f;
+        color: #9f9fff;
+      }
+      .icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .icon:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      body.dark .icon:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: #7c3aed;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+      }
+
+      /* EDITOR */
+      .editor-wrap {
+        max-width: 740px;
+        margin: 140px auto 200px;
+        padding: 0 16px;
+      }
+      .title {
+        width: 100%;
+        font-size: 44px;
+        font-weight: 700;
+        border: 0;
+        outline: none;
+      }
+      .title::placeholder {
+        color: #c4c4c4;
+      }
+      body.dark .title::placeholder {
+        color: #888;
+      }
+      .block {
+        display: flex;
+        gap: 14px;
+        margin-top: 18px;
+      }
+      .editor {
+        font-size: 20px;
+        line-height: 2;
+        min-height: 200px;
+        outline: none;
+        width: 100%;
+      }
+      .editor:empty::before {
+        content: "داستان خود را بنویسید…";
+        color: #b6b6b6;
+      }
+      body.dark .editor:empty::before {
+        color: #888;
+      }
+
+      /* PLUS BUTTON */
+      .plus {
+        position: relative;
+        margin-top: 6px;
+      }
+      .plus-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.25s;
+      }
+      .plus-btn:hover {
+        transform: scale(1.1);
+      }
+      body.dark .plus-btn {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: #2b2b45;
+      }
+      .options {
+        position: absolute;
+        right: 44px;
+        top: 0;
+        display: flex;
+        gap: 10px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(10px);
+        transition: 0.25s cubic-bezier(0.2, 0.9, 0.2, 1);
+      }
+      .options.show {
+        opacity: 1;
+        pointer-events: auto;
+        transform: none;
+      }
+      .opt {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      body.dark .opt {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: #2b2b45;
+      }
+      .editor img,
+      iframe {
+        max-width: 100%;
+        border-radius: 10px;
+        margin: 24px 0;
+      }
+      blockquote {
+        border-right: 4px solid var(--accent);
+        padding-right: 14px;
+        color: #555;
+        margin: 24px 0;
+      }
+      body.dark blockquote {
+        color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-right">
+          <div class="brand">نوت‌فورج</div>
+          <div class="draft">پیش‌نویس</div>
+        </div>
+        <div class="header-left">
+          <button class="publish" onclick="publish()">انتشار</button>
+          <div class="icon" id="darkBtn" title="حالت تاریک">
+            <i data-feather="moon"></i>
+          </div>
+          <div class="icon"><i data-feather="more-horizontal"></i></div>
+          <div class="icon"><i data-feather="bell"></i></div>
+          <div class="avatar">V</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- EDITOR -->
+    <main class="editor-wrap">
+      <input class="title" placeholder="عنوان" id="title" />
+      <div class="block">
+        <div class="plus">
+          <div class="plus-btn" id="plusBtn"><i data-feather="plus"></i></div>
+          <div class="options" id="options">
+            <div class="opt" title="تصویر" onclick="addImage()">
+              <i data-feather="image"></i>
+            </div>
+            <div class="opt" title="ویدیو" onclick="addVideo()">
+              <i data-feather="video"></i>
+            </div>
+            <div class="opt" title="نقل‌قول" onclick="addQuote()">
+              <i data-feather="quote"></i>
+            </div>
+            <div class="opt" title="جداکننده" onclick="addDivider()">
+              <i data-feather="minus"></i>
+            </div>
+            <div class="opt" title="لینک" onclick="addLink()">
+              <i data-feather="link"></i>
+            </div>
+            <div class="opt" title="لیست" onclick="addList()">
+              <i data-feather="list"></i>
+            </div>
+            <div class="opt" title="کد" onclick="addCode()">
+              <i data-feather="code"></i>
+            </div>
+          </div>
+        </div>
+        <div id="editor" class="editor" contenteditable="true"></div>
+      </div>
+    </main>
+
+    <script>
+      feather.replace();
+
+      const plusBtn = document.getElementById("plusBtn");
+      const options = document.getElementById("options");
+      const editor = document.getElementById("editor");
+      const darkBtn = document.getElementById("darkBtn");
+
+      plusBtn.onclick = () => options.classList.toggle("show");
+      darkBtn.onclick = () => document.body.classList.toggle("dark");
+
+      function insert(html) {
+        editor.focus();
+        document.execCommand("insertHTML", false, html);
+        options.classList.remove("show");
+      }
+
+      function addImage() {
+        const url = prompt("لینک تصویر را وارد کنید");
+        if (url) insert(`<img src="${url}">`);
+      }
+      function addVideo() {
+        const url = prompt("لینک Embed ویدیو را وارد کنید");
+        if (url)
+          insert(
+            `<iframe src="${url}" frameborder="0" allowfullscreen></iframe>`
+          );
+      }
+      function addQuote() {
+        insert(`<blockquote>متن نقل‌قول…</blockquote>`);
+      }
+      function addDivider() {
+        insert(`<hr style="margin:40px 0;border:0;border-top:1px solid #eee">`);
+      }
+      function addLink() {
+        const url = prompt("لینک را وارد کنید");
+        if (url) insert(`<a href="${url}" target="_blank">${url}</a>`);
+      }
+      function addList() {
+        insert(`<ul><li>مورد اول</li><li>مورد دوم</li></ul>`);
+      }
+      function addCode() {
+        insert(`<pre><code>کد خود را اینجا وارد کنید</code></pre>`);
+      }
+
+      function publish() {
+        console.log({ title: title.value, body: editor.innerHTML });
+        alert("پیش‌نویس آماده انتشار است (کنسول را ببین)");
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>پنل گفتگو | نوت‌فورج</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #f5f1e9;
+        --midnight: #1a2930;
+        --sage: #86b3a2;
+        --clay: #dcc7be;
+      }
+
+      body {
+        background-color: var(--bg);
+        font-family: "Vazirmatn", sans-serif;
+        color: var(--midnight);
+        line-height: 1.6;
+      }
+      .custom-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--clay);
+        border-radius: 24px;
+      }
+
+      .btn-primary {
+        background: var(--midnight);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 16px;
+        font-weight: 800;
+        transition: all 0.3s;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(26, 41, 48, 0.2);
+      }
+
+      .issue-row {
+        border-bottom: 1px solid rgba(220, 199, 190, 0.4);
+        transition: 0.2s;
+        cursor: pointer;
+      }
+      .issue-row:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .badge {
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .type-error { background: #fee2e2; color: #ef4444; }
+      .type-suggest { background: #dcfce7; color: #16a34a; }
+      .type-critique { background: #e0f2fe; color: #0284c7; }
+
+      /* GitHub Style Tabs */
+      .tab-btn {
+        padding: 8px 16px;
+        font-weight: 800;
+        border-bottom: 2px solid transparent;
+        color: #888;
+        transition: 0.3s;
+      }
+      .tab-btn.active {
+        border-bottom-color: var(--midnight);
+        color: var(--midnight);
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(26, 41, 48, 0.5);
+        backdrop-filter: blur(6px);
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .comment-box {
+        border-right: 3px solid var(--clay);
+        padding-right: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+      }
+      .comment-box::before {
+        content: "";
+        position: absolute;
+        right: -7px;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        background: var(--clay);
+        border-radius: 50%;
+      }
+
+      .hidden { display: none; }
+      .status-open { color: #22c55e; }
+      .status-closed { color: #8b5cf6; }
+    </style>
+  </head>
+  <body>
+    <header class="p-6 max-w-5xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-midnight rounded-xl flex items-center justify-center text-white">
+          <i data-feather="feather"></i>
+        </div>
+        <span class="text-xl font-black tracking-tight">NoteForge</span>
+      </div>
+      <button onclick="openModal()" class="btn-primary flex items-center gap-2 text-sm">
+        <i data-feather="edit-2" class="w-4 h-4"></i> ثبت مورد جدید
+      </button>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pb-20">
+      <div id="list-view">
+        <div class="mb-8">
+          <h1 class="text-4xl font-black mb-2">یادداشت: هنرِ ایجاز</h1>
+          <p class="text-gray-500 font-medium">بخش نقد و اصلاحات</p>
+        </div>
+
+        <div class="flex gap-4 mb-4 border-b border-clay/30 px-2">
+            <button class="tab-btn active flex items-center gap-2" onclick="switchTab('open', this)">
+                <i data-feather="info" class="w-4 h-4 text-green-500"></i> ۴ باز
+            </button>
+            <button class="tab-btn flex items-center gap-2" onclick="switchTab('closed', this)">
+                <i data-feather="check-circle" class="w-4 h-4 text-purple-500"></i> ۱۲ بسته شده
+            </button>
+        </div>
+
+        <div class="custom-card overflow-hidden">
+          <div id="main-list">
+            <div class="issue-row p-6 flex gap-4" onclick="openDetail('ابهام در استعاره پاراگراف سوم', 'در اینجا منظور از «دریای خاموش» دقیقاً مشخص نیست...', 'نقد محتوایی', 'مریم راد', 'type-critique', 'open')">
+              <i data-feather="info" class="status-open mt-1 shrink-0"></i>
+              <div class="flex-grow">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xl font-extrabold">ابهام در استعاره پاراگراف سوم</h3>
+                        <span class="badge type-critique text-[10px]">نقد محتوایی</span>
+                    </div>
+                    <span class="text-xs text-gray-400 font-bold">#۱۲ · ۲ ساعت پیش</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-500">
+                    <i data-feather="user" class="w-3 h-3"></i> <span>توسط <b>مریم راد</b></span>
+                    <span class="mr-auto flex items-center gap-1 font-bold text-xs"><i data-feather="message-circle" class="w-3 h-3"></i> ۳ پاسخ</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="issue-row p-6 flex gap-4 opacity-60 bg-gray-50/30" onclick="openDetail('غلط املایی کلمه «سپاس‌گزار»', 'اصلاح شد.', 'غلط املایی', 'علی ناصری', 'type-error', 'closed')">
+              <i data-feather="check-circle" class="status-closed mt-1 shrink-0"></i>
+              <div class="flex-grow">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xl font-extrabold line-through text-gray-400">غلط املایی کلمه «سپاس‌گزار»</h3>
+                    </div>
+                    <span class="text-xs text-gray-400 font-bold">#۱۱ · دیروز</span>
+                </div>
+                <div class="text-xs text-gray-500">بسته شده توسط نویسنده</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="detail-view" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+          <button onclick="backToList()" class="flex items-center gap-2 font-bold text-gray-500 hover:text-midnight transition">
+            <i data-feather="arrow-right"></i> بازگشت به لیست
+          </button>
+          <button onclick="closeTopic()" id="status-btn" class="bg-sage/20 text-sage px-4 py-2 rounded-xl font-black text-xs hover:bg-sage hover:text-white transition">
+            <i data-feather="check-circle" class="inline w-4 h-4 ml-1"></i> بستن گفتگو (حل شده)
+          </button>
+        </div>
+
+        <div class="mb-10 flex items-start gap-4">
+            <div id="det-status-icon" class="mt-2 text-green-500"><i data-feather="info" class="w-8 h-8"></i></div>
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span id="det-badge" class="badge">نوع</span>
+                  <span id="det-id" class="text-gray-400 font-bold">#</span>
+                </div>
+                <h2 id="det-title" class="text-4xl font-black">...</h2>
+            </div>
+        </div>
+
+        <div class="comment-box">
+          <div class="custom-card p-6 border-r-4 border-midnight">
+            <div class="flex justify-between text-xs font-bold text-gray-400 mb-4 border-b pb-3">
+              <span id="det-author">...</span>
+              <span>گزارش اولیه</span>
+            </div>
+            <p id="det-body" class="text-lg text-gray-800 leading-relaxed font-medium">...</p>
+          </div>
+        </div>
+
+        <div id="comments-thread"></div>
+
+        <div class="mt-12 bg-white rounded-3xl p-6 shadow-sm border border-clay/50">
+          <h4 class="font-black mb-4 flex items-center gap-2">
+            <i data-feather="message-square" class="text-sage"></i> پاسخ شما
+          </h4>
+          <textarea id="reply-text" rows="3" class="w-full border-none outline-none focus:ring-0 text-lg" placeholder="اینجا بنویسید..."></textarea>
+          <div class="flex justify-end border-t pt-4 mt-4">
+            <button onclick="addComment()" class="btn-primary text-sm px-8">ارسال پاسخ</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div id="modal" class="modal-overlay" onclick="if(event.target == this) closeModal()">
+      <div class="bg-white w-full max-w-xl rounded-[32px] p-8 shadow-2xl mx-4">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-black">ثبت گزارش یا پیشنهاد</h3>
+          <button onclick="closeModal()" class="p-2 bg-gray-100 rounded-full"><i data-feather="x"></i></button>
+        </div>
+        <div class="space-y-4">
+          <input type="text" id="m-title" placeholder="عنوان کوتاه..." class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-sage/30 text-lg font-bold" />
+          <div class="border-2 border-gray-100 rounded-2xl overflow-hidden">
+            <div class="bg-gray-50 p-2 flex gap-1 border-b">
+              <button class="p-2 hover:bg-white rounded-lg transition"><i data-feather="type" class="w-4 h-4"></i></button>
+              <button class="p-2 hover:bg-white rounded-lg transition"><i data-feather="image" class="w-4 h-4"></i></button>
+            </div>
+            <textarea id="m-body" rows="5" class="w-full p-4 outline-none resize-none" placeholder="توضیحات..."></textarea>
+          </div>
+          <div class="flex justify-between items-center pt-4">
+            <select id="m-type" class="bg-gray-50 p-3 rounded-xl font-bold text-sm outline-none">
+              <option value="type-suggest">پیشنهاد بهبود</option>
+              <option value="type-error">غلط املایی/نگارشی</option>
+              <option value="type-critique">نقد محتوایی</option>
+            </select>
+            <button onclick="saveNewIssue()" class="btn-primary">ثبت نهایی</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      feather.replace();
+
+      function openModal() { document.getElementById("modal").style.display = "flex"; }
+      function closeModal() { document.getElementById("modal").style.display = "none"; }
+
+      function switchTab(status, el) {
+          document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+          el.classList.add('active');
+          // منطق فیلتر کردن واقعی در دیتابیس اینجا قرار می‌گیرد
+      }
+
+      function openDetail(title, body, typeText, author, typeClass, status) {
+        document.getElementById("list-view").classList.add("hidden");
+        document.getElementById("detail-view").classList.remove("hidden");
+
+        document.getElementById("det-title").innerText = title;
+        document.getElementById("det-body").innerText = body;
+        document.getElementById("det-author").innerText = author;
+        document.getElementById("det-badge").innerText = typeText;
+        document.getElementById("det-badge").className = "badge " + typeClass;
+        
+        const statusIcon = document.getElementById("det-status-icon");
+        const statusBtn = document.getElementById("status-btn");
+
+        if(status === 'closed') {
+            statusIcon.innerHTML = '<i data-feather="check-circle"></i>';
+            statusIcon.className = "mt-2 text-purple-500";
+            statusBtn.classList.add('hidden');
+        } else {
+            statusIcon.innerHTML = '<i data-feather="info"></i>';
+            statusIcon.className = "mt-2 text-green-500";
+            statusBtn.classList.remove('hidden');
+        }
+        
+        feather.replace();
+        window.scrollTo(0, 0);
+      }
+
+      function backToList() {
+        document.getElementById("detail-view").classList.add("hidden");
+        document.getElementById("list-view").classList.remove("hidden");
+      }
+
+      function addComment() {
+        const text = document.getElementById("reply-text").value;
+        if (!text) return;
+        const thread = document.getElementById("comments-thread");
+        const html = `<div class="comment-box"><div class="custom-card p-5 bg-white/80"><div class="flex justify-between text-xs font-bold text-gray-400 mb-2"><span>شما</span><span>همین الان</span></div><p class="text-gray-700">${text}</p></div></div>`;
+        thread.insertAdjacentHTML("beforeend", html);
+        document.getElementById("reply-text").value = "";
+      }
+
+      function closeTopic() {
+        const btn = document.getElementById("status-btn");
+        btn.innerHTML = '<i data-feather="lock" class="inline w-4 h-4 ml-1"></i> بسته شد';
+        btn.className = "bg-gray-200 text-gray-500 px-4 py-2 rounded-xl font-black text-xs cursor-default";
+        document.getElementById("det-status-icon").className = "mt-2 text-purple-500";
+        document.getElementById("det-status-icon").innerHTML = '<i data-feather="check-circle"></i>';
+        feather.replace();
+      }
+
+      function saveNewIssue() {
+        const title = document.getElementById("m-title").value;
+        const body = document.getElementById("m-body").value;
+        const typeSelect = document.getElementById("m-type");
+        const typeText = typeSelect.options[typeSelect.selectedIndex].text;
+        const typeClass = typeSelect.value;
+
+        if (!title || !body) return alert("لطفاً عنوان و متن را وارد کنید");
+
+        const list = document.getElementById("main-list");
+        const html = `
+                <div class="issue-row p-6 flex gap-4" onclick="openDetail('${title}', '${body}', '${typeText}', 'شما', '${typeClass}', 'open')">
+                    <i data-feather="info" class="status-open mt-1 shrink-0"></i>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-xl font-extrabold">${title}</h3>
+                                <span class="badge ${typeClass} text-[10px]">${typeText}</span>
+                            </div>
+                            <span class="text-xs text-gray-400 font-bold">#جدید</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-500">
+                             <i data-feather="user" class="w-3 h-3"></i> <span>توسط <b>شما</b></span>
+                        </div>
+                    </div>
+                </div>`;
+        list.insertAdjacentHTML("afterbegin", html);
+        feather.replace();
+        closeModal();
+        document.getElementById("m-title").value = "";
+        document.getElementById("m-body").value = "";
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>نوت‌فورج | پلتفرم نویسندگی گروهی</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              parchment: "#F5F1E9",
+              slate: "#6B7A8F",
+              clay: "#DCC7BE",
+              sage: "#86B3A2",
+              midnight: "#1A2930",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      body {
+        font-family: "Vazirmatn", sans-serif;
+      }
+
+      .hero-bg {
+        background-image: url("https://images.unsplash.com/photo-1524995997946-a1c2e315a42f");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        animation: heroZoom 35s linear infinite alternate;
+      }
+
+      @keyframes heroZoom {
+        0% {
+          background-size: 100%;
+        }
+        100% {
+          background-size: 108%;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-parchment text-midnight overflow-x-hidden">
+    <!-- Header: لوگو در سمت چپ، دکمه‌ها در سمت راست -->
+    <header class="bg-white shadow-sm py-4 fixed top-0 right-0 w-full z-50">
+      <div class="container mx-auto px-6 flex justify-between items-center">
+        <!-- لوگو (حالا اول در DOM تا سمت چپ قرار بگیرد) -->
+        <a href="#" class="text-2xl font-bold text-midnight">نوت‌فورج</a>
+
+        <!-- ناوبری؛ از flex-row-reverse برای معکوس کردن ترتیب آیتم‌ها در RTL استفاده شده -->
+        <nav class="flex items-center gap-6 flex-row-reverse">
+          <a
+            href="./auth.html#signin"
+            class="bg-sage text-white px-4 py-2 rounded-lg hover:bg-sage/90 transition"
+            >ثبت‌نام</a
+          >
+          <a
+            href="./auth.html#login"
+            class="text-slate hover:text-sage transition"
+            >ورود</a
+          >
+          <a href="./aboutus.html" class="text-slate hover:text-sage transition"
+            >درباره ما</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero-bg relative py-40 mt-16">
+      <div class="absolute inset-0 bg-black/50"></div>
+      <div class="container mx-auto px-6 relative z-10 text-center">
+        <h1
+          class="text-5xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-sage to-clay bg-clip-text text-transparent"
+        >
+          جایی که ایده ها با هم رشد می کنند
+        </h1>
+        <p class="text-xl text-white/90 max-w-2xl mx-auto mb-10">
+          یادداشت بنویس، با دیگران به اشتراک بگذار و با کمک جامعه بهترش کن
+        </p>
+        <a
+          href="#features"
+          class="bg-sage text-white px-8 py-3 rounded-lg text-lg hover:bg-sage/90 transition"
+          >بیشتر بدانید</a
+        >
+      </div>
+    </section>
+
+    <section
+      class="py-20 bg-gradient-to-b from-parchment via-white to-parchment"
+    >
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row-reverse items-center gap-12">
+          <div data-aos="fade-left" class="md:w-1/2">
+            <img
+              src="./groupOfPeopleReading.jpg"
+              alt="نویسندگی گروهی"
+              class="rounded-2xl shadow-xl"
+            />
+          </div>
+
+          <div data-aos="fade-right" class="md:w-1/2 text-right">
+            <h2 class="text-3xl font-bold mb-6">کشف کن ، مشارکت کن ، خلق کن</h2>
+            <p class="text-slate mb-8 leading-relaxed">
+              نوت‌فورج جایی است که نویسندگان می‌توانند با هم ایده بسازند،
+              بازخورد بدهند و نوشته‌هایی خلق کنند که ماندگار باشند. در NoteForge
+              می تونی نوشته های دیگران رو بخونی ، پیشنهاد ویرایش بدی، و با هم
+              تسخه نهایی را بسازید
+            </p>
+            <a
+              href="#"
+              class="inline-block bg-sage text-white px-6 py-3 rounded-lg hover:bg-sage/90 transition"
+              >بازدید از نوت‌فورج</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="py-20 bg-white">
+      <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold text-center mb-16">
+          چرا نویسندگان نوت‌فورج را انتخاب می‌کنند
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+          <div
+            data-aos="fade-up"
+            class="bg-parchment p-8 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition text-center"
+          >
+            <div class="flex justify-center mb-4">
+              <i data-feather="sun" class="w-10 h-10 text-sage"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">خلاقیت</h3>
+            <p class="text-slate">با ذهن‌های متفاوت، ایده‌های تازه بسازید.</p>
+          </div>
+
+          <div
+            data-aos="fade-up"
+            data-aos-delay="100"
+            class="bg-parchment p-8 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition text-center"
+          >
+            <div class="flex justify-center mb-4">
+              <i data-feather="users" class="w-10 h-10 text-sage"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">کار گروهی</h3>
+            <p class="text-slate">
+              با نویسندگان دیگر از هر نقطه جهان همکاری کنید.
+            </p>
+          </div>
+
+          <div
+            data-aos="fade-up"
+            data-aos-delay="200"
+            class="bg-parchment p-8 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition text-center"
+          >
+            <div class="flex justify-center mb-4">
+              <i data-feather="edit-3" class="w-10 h-10 text-sage"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">پیشرفت در نوشتن</h3>
+            <p class="text-slate">
+              با بازخورد دیگران نوشته‌های خود را ارتقا دهید.
+            </p>
+          </div>
+
+          <div
+            data-aos="fade-up"
+            data-aos-delay="300"
+            class="bg-parchment p-8 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition text-center"
+          >
+            <div class="flex justify-center mb-4">
+              <i data-feather="book-open" class="w-10 h-10 text-sage"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">اشتراک دانش</h3>
+            <p class="text-slate">
+              از تجربه‌ها یاد بگیرید و تجربه خود را به دیگران منتقل کنید.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-20 bg-sage text-white">
+      <div class="container mx-auto px-6 text-center">
+        <h2 class="text-3xl font-bold mb-12">جامعه‌ای در حال رشد</h2>
+
+        <div data-aos="fade-up" class="grid md:grid-cols-3 gap-12">
+          <div>
+            <div class="text-5xl font-bold mb-2">۲,۰۰۰+</div>
+            <div class="text-white/90 text-lg">نویسنده فعال</div>
+            <p class="text-white/70 text-sm mt-2">
+              هر روز ایده‌های تازه می‌نویسند
+            </p>
+          </div>
+
+          <div>
+            <div class="text-5xl font-bold mb-2">۵,۰۰۰+</div>
+            <div class="text-white/90 text-lg">مقاله و پروژه</div>
+            <p class="text-white/70 text-sm mt-2">
+              از شروع تا انتشار در یک پلتفرم
+            </p>
+          </div>
+
+          <div>
+            <div class="text-5xl font-bold mb-2">۱۰,۰۰۰+</div>
+            <div class="text-white/90 text-lg">بازنویسی و ویرایش</div>
+            <p class="text-white/70 text-sm mt-2">پیشبرد واقعی کیفیت محتوا</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-midnight text-white py-12">
+      <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-xl font-bold mb-4">NoteForge</h3>
+            <p class="text-white/70">
+              جایی که ایده‌ها به واقعیت تبدیل می‌شوند.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-semibold mb-4">شرکت</h4>
+            <ul class="space-y-2">
+              <li>
+                <a href="./aboutus.html" class="text-white/70 hover:text-sage">درباره ما</a>
+              </li>
+              <li>
+                <a href="#" class="text-white/70 hover:text-sage"
+                  >فرصت‌های شغلی</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-white/70 hover:text-sage">بلاگ</a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-semibold mb-4">قوانین</h4>
+            <ul class="space-y-2">
+              <li>
+                <a href="#" class="text-white/70 hover:text-sage">حریم خصوصی</a>
+              </li>
+              <li>
+                <a href="#" class="text-white/70 hover:text-sage"
+                  >شرایط استفاده</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-white/70 hover:text-sage">کوکی‌ها</a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-semibold mb-4">ارتباط با ما</h4>
+            <div class="flex gap-4">
+              <a href="#" class="p-2 rounded-full bg-white/10 hover:bg-sage/20">
+                <i data-feather="twitter" class="w-5 h-5"></i>
+              </a>
+              <a href="#" class="p-2 rounded-full bg-white/10 hover:bg-sage/20">
+                <i data-feather="instagram" class="w-5 h-5"></i>
+              </a>
+              <a href="#" class="p-2 rounded-full bg-white/10 hover:bg-sage/20">
+                <i data-feather="linkedin" class="w-5 h-5"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-white/10 mt-12 pt-8 text-center text-white/50 text-sm"
+        >
+          © 2025 NoteForge. همه حقوق محفوظ است.
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      feather.replace();
+      AOS.init({ duration: 800, once: true });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نوت‌فورج — نمایه</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #F5F1E9;
+      --muted: #6B7A8F;
+      --sage: #86B3A2;
+      --accent: #7c3aed;
+      --midnight: #1A2930;
+      --left-width: clamp(120px, 10vw, 180px);
+      --right-width: clamp(240px, 24vw, 360px);
+      --content-max: 1400px;
+      --top-offset: 84px;
+      --sticky-top: calc(var(--top-offset) + 8px);
+      --transition: 320ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    html,body{
+      height:100%;margin:0;font-family:"Vazirmatn",sans-serif;background:var(--bg);color:var(--midnight);
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;direction:rtl;
+    }
+    a{color:inherit;text-decoration:none}
+    button{font-family:inherit;cursor:pointer}
+
+    .topbar{position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:1px solid rgba(0,0,0,0.04);z-index:60}
+    .topbar-inner{max-width:var(--content-max);margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+    .brand{font-weight:800;font-size:20px}
+    .controls{display:flex;gap:8px;align-items:center}
+
+    .icon-circle{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .icon-circle:hover{background:rgba(0,0,0,0.03)}
+
+    main{max-width:var(--content-max);margin:calc(var(--top-offset) + 8px) auto 40px;padding:0 18px}
+    .grid-wrap{display:grid;gap:20px;align-items:start;grid-template-columns: var(--left-width) minmax(0, 1fr) var(--right-width);grid-template-areas:"nav main aside";transition: grid-template-columns var(--transition);}
+
+    .col-nav{
+      grid-area:nav;
+      width:var(--left-width);
+      position: sticky;
+      top: var(--sticky-top);
+      height: fit-content;
+      transition: width var(--transition),opacity var(--transition),transform var(--transition);
+      overflow: visible;
+    }
+
+    .col-main{grid-area:main;min-width:0}
+    .col-aside{grid-area:aside;position:sticky;top:var(--sticky-top);height:fit-content}
+
+    @media (max-width:1024px){
+      .grid-wrap{grid-template-columns:1fr;grid-template-areas:"main";padding:0}
+      .col-nav,.col-aside{display:none}
+      .topbar-inner{padding:8px 12px}
+    }
+
+    .panel{background:#fff;border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(13,17,23,0.04);border:1px solid rgba(16,24,40,0.03);transition:box-shadow 220ms, transform 220ms}
+    .nav-list{display:flex;flex-direction:column;gap:8px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;font-weight:600;cursor:pointer}
+    .nav-item.active{background:#f8fafc;box-shadow:0 1px 0 rgba(16,24,40,0.03)}
+
+    .following{margin-top:10px}
+    .following .person{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px}
+    .person img{width:36px;height:36px;border-radius:999px;object-fit:cover}
+
+    .profile-banner{height:140px;border-radius:10px;background:linear-gradient(90deg,#f0f6ff,#ffffff);display:flex;align-items:center;justify-content:center;margin-bottom:16px;overflow:hidden;border:1px solid rgba(0,0,0,0.03)}
+    .profile-top{display:flex;gap:18px;align-items:flex-start}
+    .avatar{width:96px;height:96px;border-radius:14px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;flex-shrink:0}
+    .profile-meta{flex:1}
+    .profile-name{font-weight:800;font-size:28px;margin:0;display:flex;align-items:center;gap:8px}
+    .profile-sub{color:var(--muted);font-size:14px;margin-top:6px}
+    .follow-btn{padding:8px 14px;border-radius:999px;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+    .follow-btn.following{background:#fff;color:var(--accent);border:1px solid rgba(124,58,237,0.12)}
+    .tabs{display:flex;gap:18px;margin-top:18px;border-bottom:1px solid rgba(0,0,0,0.06)}
+    .tab{padding:12px 6px;cursor:pointer;font-weight:700;color:var(--muted)}
+    .tab.active{color:var(--midnight);border-bottom:3px solid var(--accent)}
+
+    .featured{display:flex;gap:12px;align-items:flex-start;border-radius:8px;border:1px solid rgba(0,0,0,0.06);padding:14px;background:#fff}
+    .book-thumb{width:96px;height:128px;border-radius:6px;background-size:cover;background-position:center;flex-shrink:0}
+    .book-meta .title{font-weight:800;font-size:16px;margin-bottom:8px}
+    .small-muted{color:var(--muted);font-size:13px}
+
+    .stories{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+    .story{display:flex;gap:16px;align-items:flex-start;background:#fff;border-radius:10px;padding:12px;border:1px solid rgba(0,0,0,0.04)}
+    .story .thumb{width:140px;height:92px;border-radius:8px;background-size:cover;background-position:center;flex-shrink:0}
+    .story .stitle{font-weight:800}
+    .story .excerpt{color:var(--muted);margin-top:6px}
+
+    .aside-profile{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;padding-top:6px}
+    .aside-avatar{width:84px;height:84px;border-radius:999px;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+    .aside-name{font-weight:800}
+    .aside-followers{color:var(--muted);font-size:13px}
+
+    .muted{color:var(--muted);font-size:13px}
+    .center{display:flex;align-items:center;justify-content:center}
+
+    .staff-list.in-view{opacity:1;transform:none}
+    .staff-item{display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:8px}
+    .staff-item .thumb{width:72px;height:56px;border-radius:6px;background-size:cover;background-position:center;flex-shrink:0}
+
+  </style>
+</head>
+<body>
+  <header class="topbar" role="banner">
+    <div class="topbar-inner">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="toggleLeft" class="icon-circle" aria-label="باز/بستن فهرست" title="باز/بستن فهرست">
+          <svg viewBox="0 0 18 12" width="18" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="18" height="2" rx="1" fill="#111827"/>
+            <rect y="5" width="18" height="2" rx="1" fill="#111827" opacity="0.7"/>
+            <rect y="10" width="18" height="2" rx="1" fill="#111827" opacity="0.5"/>
+          </svg>
+        </button>
+
+        <div class="brand" aria-hidden="true" style="padding-right:10px">نوت‌فورج</div>
+      </div>
+
+      <div class="controls" style="gap:10px">
+        <div class="icon-circle" title="نوشتن" aria-label="نوشتن">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" fill="#111827"/><path d="M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#111827"/></svg>
+        </div>
+        <div class="icon-circle" title="اعلان‌ها" aria-label="اعلان‌ها">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22a2.5 2.5 0 0 0 2.45-2H9.55A2.5 2.5 0 0 0 12 22z" fill="#111827"/><path d="M18 16V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2z" fill="#111827" opacity="0.9"/></svg>
+        </div>
+        <div style="width:36px;height:36px;border-radius:999px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700">V</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid-wrap" id="grid">
+      <aside class="col-nav">
+        <div class="panel" id="navPanel">
+          <nav class="nav-list" aria-label="ناوبری">
+            <a class="nav-item" href="./explore.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11.5L12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8.5z" fill="#111827"/></svg>خانه</a>
+            <a class="nav-item" href="./library.html">کتابخانه</a>
+            <a class="nav-item active" href="#">پروفایل</a>
+            <a class="nav-item" href="./stories.html">داستان‌ها</a>
+            <a class="nav-item" href="./stats.html">آمار</a>
+          </nav>
+
+          <hr class="my-4" style="border-color:rgba(0,0,0,0.06)"/>
+
+          <div class="following">
+            <h4 style="font-weight:700;margin-bottom:8px">افرادی که دنبال می‌کنید</h4>
+            <div id="leftFollowing"></div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="col-main">
+        <div class="panel">
+          <a href="./explore.html" class="muted" style="font-size:13px">← بازگشت به اکسپلور</a>
+
+          <div class="profile-banner" id="profileBanner">
+            <div class="muted">بنر نویسنده — می‌توانید تصویر یا گرافیک بگذارید</div>
+          </div>
+
+          <div class="profile-top">
+            <div class="avatar" id="mainAvatar">ن</div>
+
+            <div class="profile-meta">
+              <h1 class="profile-name" id="displayName">نام نویسنده <span id="verified" style="display:none;color:var(--accent)" title="تأیید شده">✔︎</span></h1>
+              <div class="profile-sub" id="shortBio">بیو کوتاه نویسنده</div>
+
+              <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+                <button id="followBtn" class="follow-btn">دنبال</button>
+                <div class="muted" id="profileMetaStats">120 مطلب • 5.2K بازدید</div>
+              </div>
+
+              <div class="tabs" role="tablist" aria-label="تب‌ها">
+                <div class="tab active" data-tab="home">خانه</div>
+                <div class="tab" data-tab="books">کتاب‌ها</div>
+                <div class="tab" data-tab="about">درباره</div>
+              </div>
+
+              <div id="tabContent" style="margin-top:18px">
+                <div id="tab-home">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <div style="font-weight:700">معرفی</div>
+                    <a href="#" class="muted" style="font-size:13px">مشاهده همه</a>
+                  </div>
+
+                  <div class="featured" id="featuredBlock">
+                    <div class="book-thumb" id="featuredThumb" style="background-image:url('https://images.unsplash.com/photo-1529251333259-d36cccaf22ea?q=80&w=800&auto=format&fit=crop')"></div>
+                    <div class="book-meta">
+                      <div class="title" id="featuredTitle">عنوان کتاب نمونه</div>
+                      <div class="muted" id="featuredMeta">توضیح کوتاه درباره کتاب یا اثر برجسته</div>
+                      <div style="margin-top:10px" class="small-muted" id="featuredYear">۲۰۲۴ · نویسنده</div>
+                    </div>
+                  </div>
+
+                  <div style="margin-top:18px;font-weight:700">مطالب</div>
+                  <div class="stories" id="storiesList"></div>
+                </div>
+
+                <div id="tab-books" style="display:none">
+                  <div style="font-weight:700;margin-bottom:10px">کتاب‌ها</div>
+                  <div id="booksGrid" class="card-grid"></div>
+                </div>
+
+                <div id="tab-about" style="display:none">
+                  <div style="font-weight:700;margin-bottom:8px">درباره</div>
+                  <div class="muted" id="aboutText">بیو کامل نویسنده اینجا قرار می‌گیرد.</div>
+
+                  <div style="margin-top:18px">
+                    <div style="font-weight:700;margin-bottom:8px">آمار</div>
+                    <div class="mini-card" style="padding:12px">
+                      <canvas id="aboutChart" width="600" height="200"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="col-aside">
+        <div class="panel">
+          <div class="aside-profile">
+            <div class="aside-avatar" id="asideAvatar">ن</div>
+            <div class="aside-name" id="asideName">نام نویسنده</div>
+            <div class="aside-followers muted" id="asideFollowers">۱۲.۳K دنبال‌کننده</div>
+            <button id="asideFollow" class="follow-btn">دنبال</button>
+          </div>
+
+          <div style="margin-top:12px">
+            <div style="font-weight:700;margin-bottom:8px">در حال دنبال</div>
+            <div id="asideFollowingList"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    feather.replace();
+
+    const PROFILES = {
+      "maria": {
+        displayName: "ماریا کاسانو",
+        username: "maria",
+        shortBio: "نویسندهٔ تجربه‌ی کاربر و طراح محصول",
+        fullBio: "ماریا سال‌هاست که در زمینه طراحی محصول و تجربهٔ کاربر مطلب می‌نویسد، کارگاه برگزار می‌کند و مشاور تیم‌های محصول است.",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=400&auto=format&fit=crop&crop=faces",
+        verified: false,
+        followers: "12.5K",
+        featured: {
+          thumb: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=800&auto=format&fit=crop",
+          title: "طراحی برای توجه",
+          meta: "راهنمای عملی برای خلق محصولاتی که دیده می‌شوند",
+          year: "۱۴۰۲"
+        },
+        stories: [
+          {id:'m-s1', title:'چطور تجربه کاربری را ساده کنیم', excerpt:'مراحل عملی برای ساده‌سازی جریان‌های پیچیده', thumb:'https://images.unsplash.com/photo-1506806732259-39c2d0268443?q=80&w=800'},
+          {id:'m-s2', title:'نقشهٔ سفر کاربر از صفر تا صد', excerpt:'ابزارها و مثال‌های واقعی', thumb:'https://images.unsplash.com/photo-1529251333259-d36cccaf22ea?q=80&w=800'}
+        ],
+        following: ['مجله نوت‌فورج','جیمز کلیر','تیم فریس']
+      },
+      "doc": {
+        displayName: "دکتر بورفورد",
+        username: "doc",
+        shortBio: "نویسندهٔ علوم اجتماعی",
+        fullBio: "نقدهای دقیق اجتماعی و تحلیل‌های عمیق دربارهٔ تغییرات فرهنگی و ساختارهای اجتماعی.",
+        avatar: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=400&auto=format&fit=crop&crop=faces",
+        verified: true,
+        followers: "52K",
+        featured: {
+          thumb: "https://images.unsplash.com/photo-1500252185289-40ca85eb23a7?q=80&w=800",
+          title: "نقد اجتماعی مدرن",
+          meta: "مجموعهٔ منتخب مقالات",
+          year: "۱۴۰۱"
+        },
+        stories: [
+          {id:'d-s1', title:'تحولات ساختاری و تأثیرات آن', excerpt:'بررسی روندهای چندساله', thumb:'https://images.unsplash.com/photo-1516455207990-7a41ce80f7ee?q=80&w=800'}
+        ],
+        following: ['نیر اَیال','ریان هالیدی']
+      },
+      "default": {
+        displayName: "نویسنده نمونه",
+        username: "user",
+        shortBio: "بیو کوتاه نویسنده",
+        fullBio: "بیو کامل نویسنده اینجا نوشته می‌شود. اطلاعات تماس، لینک‌ها و خلاصهٔ سوابق قابل نمایش است.",
+        avatar: "",
+        verified: false,
+        followers: "120",
+        featured: {
+          thumb: "https://images.unsplash.com/photo-1529251333259-d36cccaf22ea?q=80&w=800",
+          title: "تجربهٔ یادگیری بهتر",
+          meta: "۱۲ اصل برای استاد شدن",
+          year: "۱۴۰۰"
+        },
+        stories: [
+          {id:'u-s1', title:'چالش نوشتن: روزی یک متن', excerpt:'روش‌ها و تمرین‌ها برای ثبات در نوشتن.', thumb:'https://images.unsplash.com/photo-1529251333259-d36cccaf22ea?q=80&w=800'}
+        ],
+        following: ['مجله نوت‌فورج']
+      }
+    };
+
+    function getQueryUser(){
+      const p = new URLSearchParams(location.search);
+      return p.get('user') || p.get('id') || 'default';
+    }
+
+    const username = getQueryUser();
+    const profile = PROFILES[username] || PROFILES['default'];
+
+    const mainAvatar = document.getElementById('mainAvatar');
+    const displayNameEl = document.getElementById('displayName');
+    const shortBioEl = document.getElementById('shortBio');
+    const verifiedEl = document.getElementById('verified');
+    const followBtn = document.getElementById('followBtn');
+    const profileMetaStats = document.getElementById('profileMetaStats');
+    const featuredThumb = document.getElementById('featuredThumb');
+    const featuredTitle = document.getElementById('featuredTitle');
+    const featuredMeta = document.getElementById('featuredMeta');
+    const featuredYear = document.getElementById('featuredYear');
+    const storiesList = document.getElementById('storiesList');
+    const booksGrid = document.getElementById('booksGrid');
+    const aboutText = document.getElementById('aboutText');
+    const asideAvatar = document.getElementById('asideAvatar');
+    const asideName = document.getElementById('asideName');
+    const asideFollowers = document.getElementById('asideFollowers');
+    const asideFollow = document.getElementById('asideFollow');
+    const asideFollowingList = document.getElementById('asideFollowingList');
+    const leftFollowing = document.getElementById('leftFollowing');
+
+    function isFollowing(u){
+      const s = JSON.parse(localStorage.getItem('nf_follows') || '{}');
+      return !!s[u];
+    }
+    function setFollowing(u, val){
+      const s = JSON.parse(localStorage.getItem('nf_follows') || '{}');
+      if(val) s[u] = true; else delete s[u];
+      localStorage.setItem('nf_follows', JSON.stringify(s));
+      renderFollowButtons();
+    }
+
+    function renderFollowButtons(){
+      const f = isFollowing(username);
+      followBtn.classList.toggle('following', f);
+      followBtn.textContent = f ? 'دنبال‌شده' : 'دنبال';
+      asideFollow.classList.toggle('following', f);
+      asideFollow.textContent = f ? 'دنبال‌شده' : 'دنبال';
+    }
+
+    function renderProfile(){
+      displayNameEl.firstChild && (displayNameEl.firstChild.nodeValue = profile.displayName + ' ');
+      verifiedEl.style.display = profile.verified ? 'inline-block' : 'none';
+      shortBioEl.textContent = profile.shortBio || '';
+      profileMetaStats.textContent = `${(profile.stories || []).length} مطلب • ${profile.followers || '0'} دنبال‌کننده`;
+
+      if(profile.avatar){
+        mainAvatar.style.backgroundImage = `url(${profile.avatar})`;
+        mainAvatar.textContent = '';
+        asideAvatar.style.backgroundImage = `url(${profile.avatar})`;
+        asideAvatar.textContent = '';
+      } else {
+        mainAvatar.style.backgroundImage = '';
+        mainAvatar.textContent = profile.displayName.charAt(0) || 'ن';
+        asideAvatar.style.backgroundImage = '';
+        asideAvatar.textContent = profile.displayName.charAt(0) || 'ن';
+      }
+
+      if(profile.featured){
+        featuredThumb.style.backgroundImage = `url(${profile.featured.thumb})`;
+        featuredTitle.textContent = profile.featured.title;
+        featuredMeta.textContent = profile.featured.meta;
+        featuredYear.textContent = (profile.featured.year || '');
+      }
+
+      storiesList.innerHTML = '';
+      (profile.stories || []).forEach(s=>{
+        const row = document.createElement('div');
+        row.className = 'story';
+        row.innerHTML = `
+          <div class="thumb" style="background-image:url('${s.thumb}')"></div>
+          <div style="flex:1">
+            <div class="stitle">${s.title}</div>
+            <div class="excerpt">${s.excerpt}</div>
+            <div style="margin-top:8px" class="muted">⏱ چند روز قبل • ۱۲ نظر</div>
+          </div>
+        `;
+        row.addEventListener('click', ()=> location.href = './article.html?id=' + encodeURIComponent(s.id));
+        storiesList.appendChild(row);
+      });
+
+      booksGrid.innerHTML = '';
+      if(profile.featured){
+        const el = document.createElement('div');
+        el.className = 'mini-card';
+        el.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div style="width:64px;height:90px;border-radius:6px;background-size:cover;background-position:center;background-image:url('${profile.featured.thumb}')"></div><div><div style="font-weight:700">${profile.featured.title}</div><div class="muted" style="margin-top:6px">${profile.featured.meta}</div></div></div>`;
+        booksGrid.appendChild(el);
+      }
+
+      aboutText.textContent = profile.fullBio || '';
+
+      asideFollowingList.innerHTML = '';
+      (profile.following || []).forEach(name=>{
+        const l = document.createElement('div');
+        l.style.padding = '8px 0';
+        l.style.display = 'flex';
+        l.style.justifyContent = 'space-between';
+        l.innerHTML = `<div class="muted">${name}</div><div class="muted">•••</div>`;
+        asideFollowingList.appendChild(l);
+      });
+
+      asideName.textContent = profile.displayName;
+      asideFollowers.textContent = `${profile.followers} دنبال‌کننده`;
+
+      leftFollowing.innerHTML = '';
+      const sampleFollowing = [
+        {username: 'maria', label: 'ماریا کاسانو', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200'},
+        {username: 'doc', label: 'دکتر بورفورد', avatar: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=200'},
+        {username: 'anar', label: 'آنیربان' , avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=200'}
+      ];
+      sampleFollowing.forEach(u=>{
+        const r = document.createElement('a');
+        r.className = 'person';
+        r.href = './profile.html?user=' + encodeURIComponent(u.username);
+        r.innerHTML = `<img src="${u.avatar}" alt=""><div style="margin-right:8px"><div style="font-weight:600">${u.label}</div><div style="font-size:12px;color:var(--muted)">نویسنده</div></div>`;
+        leftFollowing.appendChild(r);
+      });
+
+      renderFollowButtons();
+      renderAboutChart();
+    }
+
+    followBtn.addEventListener('click', ()=> setFollowing(username, !isFollowing(username)));
+    asideFollow.addEventListener('click', ()=> setFollowing(username, !isFollowing(username)));
+
+    function renderAboutChart(){
+      const ctx = document.getElementById('aboutChart')?.getContext('2d');
+      if(!ctx) return;
+      if(window.__aboutChart) window.__aboutChart.destroy();
+      window.__aboutChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['هفته ۱','هفته ۲','هفته ۳','هفته ۴','هفته ۵'],
+          datasets: [{
+            label: 'بازدید',
+            data: [120,340,280,520,410].map(v => Math.round(v * (0.8 + Math.random()*0.6))),
+            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#7c3aed',
+            backgroundColor: 'rgba(124,58,237,0.08)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+      });
+    }
+
+    document.querySelectorAll('.tab').forEach(t=>{
+      t.addEventListener('click', ()=> {
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        const tab = t.dataset.tab;
+        document.getElementById('tab-home').style.display = (tab === 'home') ? '' : 'none';
+        document.getElementById('tab-books').style.display = (tab === 'books') ? '' : 'none';
+        document.getElementById('tab-about').style.display = (tab === 'about') ? '' : 'none';
+        if(tab === 'about') renderAboutChart();
+      });
+    });
+
+    function updateSticky(){
+      const topbar = document.querySelector('.topbar');
+      const topH = topbar?.getBoundingClientRect().height || 84;
+      const px = Math.round(topH + 8);
+      document.querySelectorAll('.col-nav, .col-aside').forEach(el => { if(el) el.style.top = px + 'px'; });
+    }
+    window.addEventListener('resize', ()=> requestAnimationFrame(updateSticky));
+    requestAnimationFrame(updateSticky);
+
+    renderProfile();
+
+  </script>
+</body>
+</html>
